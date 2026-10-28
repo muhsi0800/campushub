@@ -1,0 +1,937 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f4d3a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CampusHub">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>CampusHub — Store</title>
+<link rel="preconnect" href="https://api.fontshare.com">
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800&f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f4efe6;--paper-2:#ebe4d6;--card:#fffdf8;--ink:#1c1a17;--ink-2:#4a463f;--muted:#7a7468;
+  --line:#ddd4c3;--accent:#e2552b;--accent-ink:#fff;--forest:#1f4d3a;--sun:#f2b632;
+  --ok-bg:#e1efe4;--ok:#1f6b41;--low-bg:#fbedcc;--low:#8a5a00;--out-bg:#f8dfd8;--out:#a3341b;
+  --r:18px;--r-lg:28px;--ease:cubic-bezier(.22,1,.36,1);--ease-io:cubic-bezier(.76,0,.24,1);
+  --display:'Cabinet Grotesk','Segoe UI',sans-serif;--body:'Satoshi','Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16px/1.55 var(--body);color:var(--ink);background:var(--paper);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.theme-bw{filter:grayscale(1)}
+body.locked{overflow:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.35;background-image:radial-gradient(#00000014 1px,transparent 1px);background-size:22px 22px}
+::selection{background:var(--accent);color:#fff}
+h1,h2,h3{font-family:var(--display);letter-spacing:-.02em;margin:0}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.hidden{display:none!important}
+.muted{color:var(--muted);font-size:14px;line-height:1.55}
+
+/* progress bar */
+.progress{position:fixed;top:0;left:0;height:3px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,var(--accent),var(--sun));z-index:60}
+
+/* ===== Welcome ===== */
+.welcome-screen{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:24px 16px;overflow-y:auto;color:#f7f2e8}
+.welcome-screen .curtain{position:absolute;left:0;right:0;height:50.5%;background:var(--forest);transition:transform 1s var(--ease-io)}
+.welcome-screen .curtain.top{top:0}
+.welcome-screen .curtain.bottom{bottom:0}
+.welcome-screen .curtain.top:after{content:"";position:absolute;inset:0;background-image:radial-gradient(#ffffff14 1px,transparent 1px);background-size:22px 22px}
+.welcome-screen .curtain.bottom:after{content:"";position:absolute;inset:0;background-image:radial-gradient(#ffffff14 1px,transparent 1px);background-size:22px 22px}
+.welcome-screen.leaving{pointer-events:none}
+.welcome-screen.leaving .curtain.top{transform:translateY(-101%)}
+.welcome-screen.leaving .curtain.bottom{transform:translateY(101%)}
+.welcome-content{position:relative;z-index:2;width:100%;max-width:920px;text-align:center;transition:opacity .45s var(--ease),transform .6s var(--ease),filter .5s}
+.welcome-screen.leaving .welcome-content{opacity:0;transform:scale(.94);filter:blur(6px)}
+.welcome-logo{display:inline-flex;align-items:center;gap:10px;font:800 13px/1 var(--body);letter-spacing:.28em;padding:10px 16px;border:1px solid #ffffff38;border-radius:999px;background:#ffffff0d}
+.welcome-wave{font-size:46px;margin-top:22px;display:inline-block;transform-origin:70% 80%}
+.reveal-line{display:block;overflow:hidden;padding-bottom:.08em}
+.reveal-line>span{display:inline-block;transform:translateY(110%);animation:lineUp 1s var(--ease) forwards}
+.welcome-content h1{font-size:clamp(42px,8.4vw,104px);line-height:.95;font-weight:800;margin:14px 0 18px;letter-spacing:-.04em}
+.welcome-content h1 em{font-style:normal;color:var(--sun)}
+.welcome-subtitle{font-size:clamp(17px,2.4vw,22px);margin:0 auto;color:#f7f2e8;max-width:620px}
+.welcome-description{color:#c9d8cf;margin:10px 0 0}
+.welcome-features{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:34px 0 30px}
+.welcome-feature{display:flex;flex-direction:column;align-items:center;gap:4px;padding:20px 10px 18px;border-radius:var(--r);background:#ffffff0c;border:1px solid #ffffff1f;opacity:0;transform:translateY(24px);animation:rise .9s var(--ease) forwards;transition:background .3s,border-color .3s,transform .4s var(--ease)}
+.welcome-feature:hover{background:#ffffff18;border-color:var(--sun);transform:translateY(-6px)!important}
+.welcome-feature span{font-size:30px;margin-bottom:6px;transition:transform .5s var(--ease)}
+.welcome-feature:hover span{transform:scale(1.18) rotate(-8deg)}
+.welcome-feature b{font-family:var(--display);font-size:18px}
+.welcome-feature small{color:#b7cabe;font-size:12.5px}
+.welcome-button{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:12px;border:0;border-radius:999px;padding:17px 30px 17px 34px;background:var(--sun);color:var(--ink);font-weight:700;font-size:17px;opacity:0;animation:rise .9s var(--ease) 1.15s forwards;transition:transform .35s var(--ease),box-shadow .35s}
+.welcome-button:before{content:"";position:absolute;inset:0;background:#fff;transform:translateY(101%);transition:transform .45s var(--ease);border-radius:inherit}
+.welcome-button:hover:before{transform:translateY(0)}
+.welcome-button>*{position:relative}
+.welcome-button span.arr{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--sun);transition:transform .45s var(--ease)}
+.welcome-button:hover span.arr{transform:translateX(4px) rotate(-45deg)}
+.welcome-button:hover{box-shadow:0 18px 40px #0004}
+.welcome-hint{margin-top:22px;color:#9fb5a8;font-size:13px;letter-spacing:.06em;opacity:0;animation:rise .9s var(--ease) 1.3s forwards}
+
+/* ===== App shell ===== */
+.app{position:relative;z-index:1}
+body.intro .app{transform:scale(.965);opacity:.4}
+.app{transition:transform 1.1s var(--ease),opacity .9s var(--ease)}
+header{position:sticky;top:0;z-index:40;transition:padding .4s var(--ease)}
+.bar{max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:18px 28px;transition:padding .4s var(--ease)}
+header:after{content:"";position:absolute;inset:0;z-index:-1;background:#f4efe6d9;backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid transparent;opacity:0;transition:opacity .4s,border-color .4s}
+header.scrolled:after{opacity:1;border-color:var(--line)}
+header.scrolled .bar{padding:10px 28px}
+.brand-block{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-mark{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:var(--forest);font-size:22px;transition:transform .6s var(--ease)}
+.brand-block:hover .brand-mark{transform:rotate(-12deg) scale(1.06)}
+header h1{font-size:26px;font-weight:800;line-height:1}
+header p{margin:3px 0 0;font-size:10.5px;letter-spacing:.24em;color:var(--muted);font-weight:700}
+.nav{display:flex;gap:4px;margin-left:auto;padding:5px;border-radius:999px;background:var(--card);border:1px solid var(--line)}
+.nav a{padding:8px 14px;border-radius:999px;text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:500;transition:background .25s,color .25s}
+.nav a:hover{background:var(--paper-2);color:var(--ink)}
+.header-actions{display:flex;gap:8px;align-items:center;position:relative}
+.icon-btn{position:relative;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:19px;transition:transform .3s var(--ease),border-color .3s,background .3s}
+.icon-btn:hover{transform:translateY(-2px);border-color:var(--ink)}
+.icon-btn i{position:absolute;right:-4px;top:-4px;min-width:21px;height:21px;padding:0 5px;display:grid;place-items:center;border-radius:999px;font:700 11px/1 var(--body);font-style:normal;background:var(--accent);color:#fff;border:2px solid var(--paper)}
+.icon-btn i.bump{animation:bump .55s var(--ease)}
+.settings-panel{position:absolute;right:0;top:calc(100% + 10px);z-index:50;min-width:230px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:0 24px 50px #2a201033;display:flex;flex-direction:column;gap:8px;transform-origin:top right;transition:opacity .25s var(--ease),transform .35s var(--ease),visibility .25s}
+.settings-panel.closed{opacity:0;transform:scale(.92) translateY(-6px);visibility:hidden;pointer-events:none}
+.settings-panel b{font-family:var(--display);font-size:15px;margin-bottom:2px}
+
+.wrap{max-width:1320px;margin:0 auto;padding:0 28px}
+
+/* hero */
+.hero-panel{position:relative;display:grid;grid-template-columns:1.25fr .75fr;gap:28px;align-items:end;padding:44px 0 34px}
+.hero-kicker{display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent)}
+.hero-kicker:before{content:"";width:28px;height:2px;background:currentColor}
+.hero-panel h2{font-size:clamp(56px,11vw,150px);line-height:.88;font-weight:800;letter-spacing:-.05em;margin:14px 0 22px}
+.hero-panel h2 .reveal-line>span{animation-play-state:paused}
+body.ready .hero-panel h2 .reveal-line>span{animation-play-state:running}
+.hero-panel p{max-width:560px;font-size:clamp(17px,1.8vw,21px);color:var(--ink-2);margin:0}
+.hero-side{position:relative;border-radius:var(--r-lg);background:var(--forest);color:#f7f2e8;padding:28px;min-height:250px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between}
+.hero-side:before{content:"";position:absolute;width:260px;height:260px;border-radius:50%;background:var(--sun);right:-90px;top:-110px;opacity:.95;animation:float 9s ease-in-out infinite}
+.hero-side:after{content:"";position:absolute;width:120px;height:120px;border-radius:50%;border:2px dashed #ffffff40;left:-30px;bottom:-40px;animation:spin 24s linear infinite}
+.hero-heart{position:relative;font-family:var(--display);font-size:clamp(26px,3vw,38px);line-height:1.05;font-weight:700}
+.hero-side .chips{position:relative;display:flex;gap:8px;flex-wrap:wrap}
+.hero-side .chips span{font-size:22px;width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:#ffffff14;border:1px solid #ffffff26;animation:float 5s ease-in-out infinite}
+.hero-side .chips span:nth-child(2){animation-delay:-1.2s}.hero-side .chips span:nth-child(3){animation-delay:-2.4s}.hero-side .chips span:nth-child(4){animation-delay:-3.6s}
+
+/* marquee */
+.marquee{overflow:hidden;border-block:1px solid var(--line);padding:14px 0;margin:6px 0 34px;white-space:nowrap;mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
+.marquee div{display:inline-flex;gap:38px;animation:marq 30s linear infinite;font-family:var(--display);font-weight:700;font-size:20px;color:var(--ink-2)}
+.marquee div span:nth-child(even){color:var(--accent)}
+
+/* toolbar */
+.toolbar{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;margin-bottom:18px}
+.search{display:flex;gap:6px;align-items:center;padding:6px 6px 6px 20px;border-radius:999px;background:var(--card);border:1px solid var(--line);transition:border-color .3s,box-shadow .3s}
+.search:focus-within{border-color:var(--ink);box-shadow:0 0 0 5px #1c1a170d}
+.search svg{flex:none;color:var(--muted)}
+.search input{flex:1;min-width:0;border:0;background:transparent;padding:12px 6px;font-size:16px;outline:none}
+.search select{border:0;background:var(--paper-2);border-radius:999px;padding:11px 16px;font-weight:500;outline:none}
+.tabs{position:relative;display:flex;gap:2px;padding:5px;border-radius:999px;background:var(--card);border:1px solid var(--line);margin-bottom:28px;width:max-content;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.tab-ink{position:absolute;top:5px;bottom:5px;left:0;border-radius:999px;background:var(--ink);transition:transform .5s var(--ease),width .5s var(--ease);z-index:0}
+.tab{position:relative;z-index:1;border:0;background:transparent;padding:10px 18px;border-radius:999px;font-weight:500;font-size:15px;color:var(--ink-2);white-space:nowrap;transition:color .35s}
+.tab.active{color:var(--paper)}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:18px}
+.section-head h2,.panel h2{font-size:clamp(28px,3.4vw,40px);font-weight:800}
+.section-head .muted{font-family:var(--body);font-size:16px}
+
+/* grid + cards */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;view-transition-name:none}
+.card{position:relative;display:flex;flex-direction:column;gap:8px;padding:20px;border-radius:var(--r);background:var(--card);border:1px solid var(--line);overflow:hidden;animation:cardIn .7s var(--ease) both;animation-delay:calc(var(--i,0)*55ms);transition:transform .45s var(--ease),box-shadow .45s var(--ease),border-color .3s}
+.card:before{content:"";position:absolute;inset:auto -40% -60% auto;width:200px;height:200px;border-radius:50%;background:var(--paper-2);transition:transform .7s var(--ease);z-index:0}
+.card>*{position:relative;z-index:1}
+.card:hover{transform:translateY(-6px);box-shadow:0 22px 40px -18px #3a2a1040;border-color:#c9bea9}
+.card:hover:before{transform:scale(1.6)}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.emoji{display:grid;place-items:center;width:56px;height:56px;border-radius:16px;background:var(--paper);font-size:28px;transition:transform .6s var(--ease)}
+.card:hover .emoji{transform:rotate(-10deg) scale(1.08)}
+.card h3{font-size:21px;font-weight:700;line-height:1.15;margin-top:8px}
+.badge{font-size:11.5px;font-weight:700;padding:6px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px}
+.badge:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.badge.available:before{animation:pulse 1.8s infinite}
+.available{background:var(--ok-bg);color:var(--ok)}.low{background:var(--low-bg);color:var(--low)}.out{background:var(--out-bg);color:var(--out)}
+.card-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:14px;border-top:1px dashed var(--line)}
+.price{font-family:var(--display);font-weight:800;font-size:22px}
+.order,.primary{position:relative;overflow:hidden;border:0;border-radius:999px;padding:11px 18px;font-weight:700;font-size:14px;background:var(--ink);color:var(--paper);transition:transform .3s var(--ease),background .3s}
+.order:hover:not(:disabled),.primary:hover{background:var(--accent);transform:translateY(-2px)}
+.order:active:not(:disabled),.primary:active{transform:scale(.96)}
+.order:disabled{background:var(--paper-2);color:var(--muted);cursor:not-allowed}
+.ripple{position:absolute;border-radius:50%;background:#ffffff66;transform:scale(0);animation:ripple .7s ease-out forwards;pointer-events:none}
+.empty{grid-column:1/-1;text-align:center;padding:50px 20px;border:1.5px dashed var(--line);border-radius:var(--r);color:var(--muted);animation:cardIn .5s var(--ease)}
+
+/* panels */
+.panels{display:grid;grid-template-columns:1fr;gap:20px;margin-top:56px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:clamp(20px,3vw,34px);scroll-margin-top:90px}
+.panel h2{margin-bottom:14px}
+.cart-panel{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.cart-panel .muted,.cart-panel label{color:#b3ab9c}
+.cart-panel .line{border-color:#ffffff1f}
+.cart-panel input,.cart-panel select{background:#ffffff0d;border-color:#ffffff26;color:var(--paper)}
+.cart-panel select option{color:var(--ink)}
+.cart-panel input::placeholder{color:#8d8678}
+.line{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:14px 0;animation:slideIn .5s var(--ease) both}
+.line:last-child{border-bottom:0}
+.qty{display:flex;align-items:center;gap:10px}
+.qty button{width:34px;height:34px;border-radius:50%;border:1px solid currentColor;background:transparent;font-weight:700;transition:background .25s,color .25s,transform .2s}
+.qty button:hover{background:var(--paper);color:var(--ink)}
+.qty button:active{transform:scale(.9)}
+.checkout{animation:expand .6s var(--ease)}
+.total{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--display);font-size:24px;font-weight:800;margin:18px 0;padding:16px 0;border-block:1px solid #ffffff1f}
+.total #total{font-size:36px;color:var(--sun)}
+.fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.fields label,.payment-box label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px;letter-spacing:.02em}
+input,select{padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--paper);transition:border-color .25s,box-shadow .25s}
+input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px #e2552b22}
+.fields input,.fields select{width:100%}
+.payment-box{margin:20px 0;padding:22px;border-radius:var(--r);background:#ffffff0a;border:1px solid #ffffff1f;display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:22px;align-items:center}
+.payment-box h3{font-size:22px;margin-bottom:6px}
+.upi-id{font-family:var(--display);font-weight:800;font-size:clamp(20px,2.4vw,26px);word-break:break-word;color:var(--sun);margin:8px 0}
+.qr-image{width:100%;max-width:200px;background:#fff;padding:12px;border-radius:16px;display:block;margin:auto;transition:transform .5s var(--ease)}
+.qr-image:hover{transform:scale(1.04) rotate(-1.5deg)}
+.payment-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 16px}
+.payment-box input[type=file]{width:100%;font-size:13px}
+.smallbtn{padding:9px 14px;font-size:13px;font-weight:700;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);transition:background .25s,color .25s,transform .25s var(--ease),border-color .25s}
+.smallbtn:hover{transform:translateY(-1px);border-color:var(--ink)}
+.cart-panel .smallbtn{background:transparent;color:var(--paper);border-color:#ffffff40}
+.cart-panel .smallbtn:hover{background:var(--paper);color:var(--ink)}
+.cart-panel .primary{background:var(--sun);color:var(--ink);padding:15px 26px;font-size:15px}
+.cart-panel .primary:hover{background:#fff}
+.orderbox{border:1px solid var(--line);padding:16px 18px;border-radius:var(--r);margin:12px 0;background:var(--paper);animation:slideIn .5s var(--ease) both}
+.orderbox b{font-family:var(--display);font-size:17px}
+.orderbox select{margin-left:6px;padding:7px 10px}
+.phone-link{font-weight:700;text-decoration:none;color:var(--accent)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+#manageList h3{font-size:20px;margin:26px 0 6px}
+.form-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.ghost{border:1px solid var(--line);background:transparent;border-radius:999px;padding:11px 18px;font-weight:700;font-size:14px;transition:border-color .25s,transform .25s}
+.ghost:hover{border-color:var(--ink);transform:translateY(-2px)}
+.note{margin-top:20px;border-radius:var(--r);padding:16px 18px;font-size:13.5px;background:var(--low-bg);color:#5d4300;border:1px solid #edd59a}
+.footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted);padding:34px 0 40px}
+.footer .big{font-family:var(--display);font-size:clamp(48px,9vw,120px);font-weight:800;letter-spacing:-.05em;color:var(--ink);line-height:.9;width:100%;margin-bottom:14px}
+
+/* fly dot + toast */
+.fly{position:fixed;z-index:80;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:20px;background:var(--sun);pointer-events:none;box-shadow:0 10px 24px #0003}
+.toast-wrap{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:90;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{background:var(--ink);color:var(--paper);padding:13px 20px;border-radius:14px;font-size:14px;font-weight:500;box-shadow:0 18px 40px #0003;max-width:min(92vw,520px);text-align:center;animation:toastIn .5s var(--ease) both}
+.toast.out{animation:toastOut .4s var(--ease) forwards}
+
+/* scroll reveal (content visible without JS) */
+.js .sr{opacity:0;transform:translateY(36px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.js .sr.in{opacity:1;transform:none}
+
+@keyframes lineUp{to{transform:translateY(0)}}
+@keyframes rise{to{opacity:1;transform:translateY(0)}}
+@keyframes cardIn{from{opacity:0;transform:translateY(22px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+@keyframes expand{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.55)}65%{transform:scale(.9)}100%{transform:scale(1)}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 currentColor}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}
+@keyframes ripple{to{transform:scale(4);opacity:0}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes marq{to{transform:translateX(-50%)}}
+@keyframes wave{0%,60%,100%{transform:rotate(0)}10%,30%{transform:rotate(16deg)}20%,40%{transform:rotate(-8deg)}}
+@keyframes toastIn{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateY(10px) scale(.96)}}
+.welcome-wave{animation:wave 2.4s ease-in-out .9s infinite}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.35s}
+
+@media(max-width:980px){.nav{display:none}.hero-panel{grid-template-columns:1fr}.hero-side{min-height:200px}.fields{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){
+  .bar,header.scrolled .bar{padding:12px 16px}.wrap{padding:0 16px}
+  header h1{font-size:22px}header p{font-size:9px;letter-spacing:.16em}.brand-mark{width:38px;height:38px;font-size:19px;border-radius:12px}
+  .icon-btn{width:40px;height:40px;font-size:17px}
+  .hero-panel{padding:26px 0 24px}
+  .toolbar{grid-template-columns:1fr}
+  .search{flex-wrap:wrap;border-radius:22px;padding:6px 6px 6px 16px}.search select{width:100%}
+  .tabs{width:100%}
+  .grid,.fields{grid-template-columns:1fr}
+  .payment-box{grid-template-columns:1fr}.qr-image{max-width:180px}
+  .line{flex-wrap:wrap}
+  .welcome-features{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:24px 0}
+  .welcome-wave{font-size:38px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.js .sr{opacity:1;transform:none}.reveal-line>span{transform:none}}
+.payment-box,.payment-box>*{min-width:0}.shot-pv{max-width:100%;color:var(--ink);display:flex;align-items:center;gap:12px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--card);animation:cardIn .4s var(--ease) both}.shot-pv[hidden]{display:none}.shot-pv img{flex:none;width:54px;height:54px;object-fit:cover;object-position:top;border-radius:10px;border:1px solid var(--line)}.shot-pv div{flex:1;min-width:0}.shot-pv b{display:block;font-size:14px;color:var(--ink)}.shot-pv small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.shot-pv .smallbtn{flex:none;color:var(--ink);background:transparent;border:1px solid var(--line)}.shot-pv .smallbtn:hover{border-color:var(--accent);color:var(--accent)}.order-shot{display:block;margin-top:10px;width:84px;height:84px;object-fit:cover;object-position:top;border-radius:12px;border:1px solid var(--line)}
+/* page-to-page curtain */
+.page-curtain{position:fixed;inset:0;z-index:9998;display:grid;place-items:center;background:var(--forest);color:#f7f2e8;transform:translateY(100%);pointer-events:none}
+.page-curtain:after{content:"";position:absolute;inset:0;background-image:radial-gradient(#ffffff14 1px,transparent 1px);background-size:22px 22px}
+html.arrive .page-curtain,.page-curtain.cover{transform:none}
+.page-curtain.above{transform:translateY(-100%)}
+.page-curtain.anim{transition:transform .85s var(--ease-io)}
+.pc-inner{position:relative;z-index:1;display:flex;align-items:center;gap:14px;font:800 clamp(30px,5vw,54px)/1 var(--display);letter-spacing:-.03em;transition:opacity .4s,transform .6s var(--ease)}
+.pc-inner .brand-mark{background:var(--sun);width:58px;height:58px;font-size:28px;border-radius:18px}
+.page-curtain.above .pc-inner{opacity:0;transform:translateY(-30px)}
+.switch{display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 18px;border-radius:999px;background:var(--ink);color:var(--paper);text-decoration:none;font-weight:700;font-size:14px;transition:transform .3s var(--ease),background .3s}
+.switch:hover{background:var(--accent);transform:translateY(-2px)}
+.switch span{transition:transform .5s var(--ease)}.switch:hover span{transform:rotate(-12deg) scale(1.15)}
+@media(max-width:640px){.switch{height:40px;padding:0 13px;font-size:13px}}
+.nav a{white-space:nowrap}header p{white-space:nowrap}
+@media(max-width:1240px){.nav{display:none}}
+@media(max-width:640px){header p{display:none}}
+@media(max-width:400px){.switch{padding:0 11px}.switch span{display:none}}
+.brand-mark{flex:none}
+@media(max-width:400px){.bar{gap:8px}header h1{font-size:19px}.header-actions{gap:6px}}
+.admin-view{position:fixed;inset:0;z-index:9990;background:var(--paper);visibility:hidden;opacity:0}.admin-view.on{visibility:visible;opacity:1}.admin-view iframe{border:0;width:100%;height:100%;display:block}html.in-admin,html.in-admin body{overflow:hidden}html.arrive-admin .page-curtain{transform:none}</style>
+<script>window.CH_LS=(function(){try{var s=window['local'+'Storage'];s.setItem('__t','1');s.removeItem('__t');return s}catch(e){var d={};return{getItem:function(k){return k in d?d[k]:null},setItem:function(k,v){d[k]=String(v)},removeItem:function(k){delete d[k]}}}})();</script>
+<script>document.documentElement.classList.add('js');if(location.hash==='#store')document.documentElement.classList.add('arrive');if(location.hash==='#admin')document.documentElement.classList.add('arrive-admin')</script>
+</head>
+<body class="intro locked">
+<div class="progress" id="progress"></div>
+<div class="page-curtain" id="pageCurtain" aria-hidden="true"><div class="pc-inner"><div class="brand-mark">🎓</div><span>CampusHub</span></div></div>
+
+<section id="welcomeScreen" class="welcome-screen" aria-label="Welcome">
+ <div class="curtain top"></div><div class="curtain bottom"></div>
+ <div class="welcome-content">
+  <div class="welcome-logo">🔎 CAMPUSHUB</div><br><div class="welcome-wave">👋</div>
+  <h1><span class="reveal-line"><span style="animation-delay:.25s">Welcome to</span></span><span class="reveal-line"><span style="animation-delay:.38s"><em>CampusHub!</em></span></span></h1>
+  <p class="welcome-subtitle">Your campus pre-order and availability platform.</p>
+  <p class="welcome-description">Find what you need, place your order,<br>and collect it easily on campus.</p>
+  <div class="welcome-features">
+   <div class="welcome-feature" style="animation-delay:.6s"><span>🍔</span><b>Food</b><small>Tasty and fresh</small></div>
+   <div class="welcome-feature" style="animation-delay:.7s"><span>📚</span><b>Books</b><small>Library and study</small></div>
+   <div class="welcome-feature" style="animation-delay:.8s"><span>✏️</span><b>Stationery</b><small>Daily essentials</small></div>
+   <div class="welcome-feature" style="animation-delay:.9s"><span>📍</span><b>Campus</b><small>Convenient and quick</small></div>
+  </div>
+  <button id="startExploring" class="welcome-button">Get Started <span class="arr">→</span></button>
+  <p class="welcome-hint">Your campus, made easier.</p>
+ </div>
+</section>
+
+<div class="app">
+<header id="topbar"><div class="bar">
+ <div class="brand-block"><div class="brand-mark" aria-hidden="true">🎓</div><div><h1>CampusHub</h1><p>EAT · STUDY · SHOP · CONNECT</p></div></div>
+ <nav class="nav" aria-label="Sections"><a href="#browse">Campus items</a><a href="#cartPanel">Pre-order cart</a><a href="#ordersPanel">My recent orders</a></nav>
+ <div class="header-actions">
+  <a class="switch" href="#admin" data-go="admin"><span>🔒</span> Admin</a>
+  <button type="button" class="icon-btn" id="cartJump" aria-label="Go to cart">🛒<i id="cartCount">0</i></button>
+  <button type="button" class="icon-btn" id="settingsBtn" aria-label="⚙️ Settings">⚙️</button>
+  <div id="settingsPanel" class="settings-panel closed"><b>Appearance</b><button id="bwBtn" class="smallbtn">◐ Black &amp; White</button><button id="colorBtn" class="smallbtn">🎨 Colour Mode</button></div>
+ </div>
+</div></header>
+
+<div class="wrap">
+ <section class="hero-panel">
+  <div>
+   <div class="hero-kicker">Welcome to</div>
+   <h2><span class="reveal-line"><span>CampusHub</span></span></h2>
+   <p class="sr">Your one-stop destination for food, books, stationery and more! Find what you need and make campus life easier.</p>
+  </div>
+  <div class="hero-side sr">
+   <div class="hero-heart">Small needs ♡<br>Big dreams</div>
+   <div class="chips"><span>🍔</span><span>📚</span><span>✏️</span><span>📍</span></div>
+  </div>
+ </section>
+
+ <div class="marquee" aria-hidden="true"><div>
+  <span>Food</span><span>✦</span><span>Library books</span><span>✦</span><span>Stationery</span><span>✦</span><span>Campus</span><span>✦</span><span>Food</span><span>✦</span><span>Library books</span><span>✦</span><span>Stationery</span><span>✦</span><span>Campus</span><span>✦</span>
+ </div></div>
+
+ <section id="browse" style="scroll-margin-top:90px">
+  <div class="toolbar sr">
+   <div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="search" placeholder="Search food, books, stationery, or location…"><select id="status"><option>All stock</option><option>Available</option><option>Low Stock</option><option>Out of Stock</option></select></div>
+  </div>
+  <div class="tabs sr" id="tabs"><span class="tab-ink" id="tabInk"></span><button class="tab active" data-cat="All">All items</button><button class="tab" data-cat="Food">🍔 Food</button><button class="tab" data-cat="Books">📚 Library books</button><button class="tab" data-cat="Stationery">✏️ Stationery</button></div>
+  <div class="section-head"><h2>Campus items <span class="muted" id="count"></span></h2></div>
+  <main class="grid" id="items"></main>
+ </section>
+
+ <div class="panels">
+ <section class="panel cart-panel sr" id="cartPanel"><h2>🛒 Pre-order cart</h2><div id="cart"><p class="muted">Your cart is empty. Add an available item above.</p></div><div id="checkout" class="checkout hidden"><div class="total"><span>Total</span><span id="total">₹0</span></div><div class="fields"><div><label for="student">Student name</label><input id="student" placeholder="Your name"></div><div><label for="roll">Student ID / roll no.</label><input id="roll" placeholder="Your roll number"></div><div><label for="phone">Phone number</label><input id="phone" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit number"></div><div><label for="pickup">Pickup / collection time</label><select id="pickup"><option>As soon as possible</option><option>Within 30 minutes</option><option>Lunch break</option><option>After class</option><option>Tomorrow</option></select></div></div>
+ <div class="payment-box" id="paymentBox">
+  <div>
+   <h3>💳 UPI payment</h3>
+   <p class="muted">Scan the QR code with your UPI app, or use the UPI ID below. Enter the order total in your payment app.</p>
+   <div class="upi-id" id="upiId">8590160800@nyes</div>
+   <div class="payment-actions"><button type="button" class="smallbtn" id="copyUpi">Copy UPI ID</button><button type="button" class="smallbtn" id="copyAmount">Copy total amount</button></div>
+   <label for="paymentRef">UPI transaction/reference ID (if available)</label>
+   <input id="paymentRef" placeholder="Enter transaction reference" style="width:100%">
+   <label for="paymentScreenshot" style="margin-top:14px">Payment screenshot (optional)</label>
+   <input id="paymentScreenshot" type="file" accept="image/*">
+   <div class="shot-pv" id="shotPv" hidden><img id="shotImg" alt="Payment screenshot preview"><div><b>Screenshot attached</b><small id="shotInfo"></small></div><button type="button" class="smallbtn" id="shotRemove">Remove</button></div>
+   <p class="muted">Payment is checked manually by the owner. This demo does not verify payments automatically.</p>
+  </div>
+  <img class="qr-image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZoAAAGaAQAAAAAefbjOAAAC7klEQVR4nO2cS46jMBCGvxojzdJIc4AcBW7QRxrlZvgofQNYtgSqWZTNo7PqF2SgWKAE8ylGlOrxuxxRPnykXx9nwCGHHHLIIYccOick+aiQFpCWSUTqMtAO5Yb2kOk5tD/UqKpqD9oxCRDUPjV9UO0IqqqqW2i/6Tm0PzQUB5Dkt+q9BjOG++3NBkSkOm56Du0GVe++C0yizaugqQWIQeVbfsmh/xYKKlIHpekBLIj8zC859MRQVNUOoNER7QBpAVXLI0BVx+Om59DeUBKx4gKGCvnbAxBU2qFCrPQQkS203/Qc2juPWEvZ8U3slG4jmmoE4lbrfvJncujrkLSAtIMIDBVWbnaDiIWTe/Eg0h4yPYd2hDChoYuqEEe0i+NqIN8UR0ytsJuf/Jkc+gpUXjIhv/2mz1mkdku22UM2C7eIs0NbV6BqxYX2QTHh0uxgtCLEtE23iDNDs0WEbfUZTNQ24dKsxC3iEtDKR5g/sPgRVc02dDn1eXHDLeLU0NpHWKyI2RWsEk1bB1PPI64AzbVGSSVXQSSOZDEz5jzCLeL8UH7JliT0D47CytKmJ/sNzyNOD5WoUUrLpVMCSkW6JBNuEeeHHvQIoIgSpcIo4cSjxhWgVdTIwiUPi51Zq3KF6hJQiRX93BCxih+55iwDxXjcIs4MzT1Uk2i6jZUy5EvKUCNAHkgvB0zPod2hTdSAzSkW6cochecRl4CKjxhqIPYIhFEanSohgqaXHsHWQ4P3Yl8A2qx0kde3Fl1qcRRrjeLJn8mhr0Bz1FjkSshvf04qF3HKo8ZFoGVPV/YCgN5vc6wYKki+X+MS0FapfCdF5O1cZeHLVewrQLMeQQ4Tc59+7o+YI4lHjWtA7/d0KUyVNgpCHCv7mtowCsOfsmHjyZ/JoW+FUl0Sh+a1sm2g0jJZs/7x03Pop6HiI6ICQ7ma2oCm21gJTELTHTU9h3aHHvQI67NcNcvktXLPLC8Cif8zmUMOOeSQQw459EnoH9BJvyl+I7SCAAAAAElFTkSuQmCC" alt="UPI QR code for 8590160800@nyes">
+ </div>
+ <p style="margin:0"><button class="primary" id="place">Submit pre-order for owner review</button></p></div></section>
+
+ <section class="panel sr" id="ordersPanel"><h2>🧾 My recent orders</h2><div id="orders"><p class="muted">No orders placed yet.</p></div></section>
+
+ </div>
+
+ <div class="note sr"><b>College project demo:</b> Orders and stock are saved only in this browser. Orders, payment references and screenshots are saved in this browser and shown on the admin page of this device; nothing is sent to a server. UPI payments are not automatically verified.</div>
+ <div class="footer"><div class="big sr">CampusHub</div><span>CampusHub · College availability and pre-order prototype</span><span>EAT · STUDY · SHOP · CONNECT</span></div>
+</div>
+</div>
+<div class="toast-wrap" id="toasts" aria-live="polite"></div>
+
+<script>
+function toast(msg){const w=document.getElementById("toasts"),t=document.createElement("div");t.className="toast";t.textContent=msg;w.appendChild(t);setTimeout(()=>{t.classList.add("out");setTimeout(()=>t.remove(),400)},3200)}
+window.alert=toast;
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function withVT(fn){if(document.startViewTransition&&!reduce)document.startViewTransition(fn);else fn()}
+
+const seed=[
+{id:1,name:"Vegetable sandwich",category:"Food",quantity:8,price:35,location:"Main canteen",detail:"Freshly prepared",emoji:"🥪"},
+{id:2,name:"Samosa",category:"Food",quantity:3,price:15,location:"Main canteen",detail:"Tea counter snack",emoji:"🥟"},
+{id:3,name:"Lemon juice",category:"Food",quantity:0,price:20,location:"Juice counter",detail:"Cold drink",emoji:"🥤"},
+{id:4,name:"Bread pocket",category:"Food",quantity:12,price:15,location:"Main canteen",detail:"Breakfast and lunch",emoji:"🥞"},
+{id:5,name:"Data Structures in C",category:"Books",quantity:2,price:0,location:"Library · Shelf B2",detail:"Author: Reema Thareja",emoji:"📘"},
+{id:6,name:"Introduction to Algorithms",category:"Books",quantity:0,price:0,location:"Library · Shelf C1",detail:"Author: Cormen et al.",emoji:"📕"},
+{id:7,name:"Let Us C",category:"Books",quantity:4,price:0,location:"Library · Shelf B1",detail:"Author: Yashavant Kanetkar",emoji:"📗"},
+{id:8,name:"A4 notebook",category:"Stationery",quantity:14,price:45,location:"Campus stationery shop",detail:"200 pages",emoji:"📓"},
+{id:9,name:"Blue ball pen",category:"Stationery",quantity:2,price:10,location:"Campus stationery shop",detail:"Blue ink",emoji:"🖊️"},
+{id:10,name:"Record file",category:"Stationery",quantity:0,price:35,location:"Campus stationery shop",detail:"A4 size",emoji:"📁"}];
+const $=id=>document.getElementById(id);const emoji={Food:"🍴",Books:"📚",Stationery:"✏️"};
+function load(key,fallback){try{return JSON.parse(CH_LS.getItem(key))??fallback}catch(e){return fallback}}
+let items=load("campusfind-preorder-items",seed),cart=load("campusfind-preorder-cart",[]),orders=load("campusfind-preorder-orders",[]),cat="All";
+function save(){try{CH_LS.setItem("campusfind-preorder-items",JSON.stringify(items));CH_LS.setItem("campusfind-preorder-cart",JSON.stringify(cart));CH_LS.setItem("campusfind-preorder-orders",JSON.stringify(orders))}catch(e){console.warn("Local storage unavailable",e);if(e&&/quota/i.test(e.name+e.message))toast("Storage is full. Ask the admin to clear old orders.")}}
+function status(item){if(item.quantity===0)return"Out of Stock";if(item.quantity<=3)return"Low Stock";return"Available"}
+function esc(value){return String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[char])}
+function money(amount,item){return item.category==="Books"&&Number(amount)===0?"Library copy":"₹"+amount}
+function renderItems(){const query=$("search").value.toLowerCase().trim(),filter=$("status").value;const shown=items.filter(item=>(cat==="All"||item.category===cat)&&(filter==="All stock"||status(item)===filter)&&[item.name,item.category,item.location,item.detail].join(" ").toLowerCase().includes(query));$("count").textContent="("+shown.length+")";$("items").innerHTML=shown.length?shown.map(item=>{const st=status(item),css=st==="Available"?"available":st==="Low Stock"?"low":"out";return `<article class="card" style="--i:${shown.indexOf(item)}"><div class="top"><span class="emoji">${esc(item.emoji||emoji[item.category])}</span><span class="badge ${css}">${st}</span></div><h3>${esc(item.name)}</h3><div class="muted">${esc(item.detail||item.category)}</div><div class="muted">📍 ${esc(item.location)}<br>Quantity: ${item.quantity}</div><div class="card-bottom"><span class="price">${money(item.price,item)}</span><button class="order" data-add="${item.id}" ${item.quantity===0?"disabled":""}>${item.category==="Books"?"Reserve book":"Pre-order"}</button></div></article>`}).join(""):`<div class="empty">No items found. Try a different search or category.</div>`;$("items").querySelectorAll("[data-add]").forEach(b=>b.onclick=e=>add(Number(b.dataset.add),b))}
+function add(id,src){const item=items.find(x=>x.id===id),line=cart.find(x=>x.id===id);if(!item||item.quantity<1)return alert("This item is out of stock.");if((line?.qty||0)>=item.quantity)return alert("You cannot order more than the available stock.");if(line)line.qty++;else cart.push({id,qty:1});save();fly(src,item);renderCart();bump()}
+function change(id,difference){const line=cart.find(x=>x.id===id),item=items.find(x=>x.id===id);if(!line||!item)return;const next=line.qty+difference;if(next<1)cart=cart.filter(x=>x.id!==id);else if(next<=item.quantity)line.qty=next;else return alert("Quantity exceeds available stock.");save();renderCart();bump()}
+function renderCart(){$("cartCount").textContent=cart.reduce((sum,line)=>sum+line.qty,0);cart=cart.filter(line=>items.some(item=>item.id===line.id&&item.quantity>0));cart.forEach(line=>{const item=items.find(x=>x.id===line.id);line.qty=Math.min(line.qty,item.quantity)});cart=cart.filter(line=>line.qty>0);$("cartCount").textContent=cart.reduce((sum,line)=>sum+line.qty,0);if(!cart.length){$("cart").innerHTML=`<p class="muted">Your cart is empty. Add an available item above.</p>`;$("checkout").classList.add("hidden");save();return}$("cart").innerHTML=cart.map(line=>{const item=items.find(x=>x.id===line.id);return `<div class="line"><div><b>${esc(item.name)}</b><div class="muted">${money(item.price,item)} each · ${esc(item.category)}</div></div><div class="qty"><button data-dec="${item.id}">−</button><b>${line.qty}</b><button data-inc="${item.id}">+</button></div><b>${money(item.price*line.qty,item)}</b></div>`}).join("");$("cart").querySelectorAll("[data-dec]").forEach(b=>b.onclick=()=>change(Number(b.dataset.dec),-1));$("cart").querySelectorAll("[data-inc]").forEach(b=>b.onclick=()=>change(Number(b.dataset.inc),1));$("total").textContent="₹"+cart.reduce((sum,line)=>sum+items.find(item=>item.id===line.id).price*line.qty,0);$("checkout").classList.remove("hidden");save()}
+function renderOrders(){$("orders").innerHTML=orders.length?orders.slice(0,10).map(order=>`<div class="orderbox"><b>Order ${esc(order.id)} · ${esc(order.status)}</b><p class="muted">${esc(order.student)} (${esc(order.roll)}) · 📞 <a class="phone-link" href="tel:${esc(order.phone||"")}">${esc(order.phone||"Not provided")}</a> · Pickup: ${esc(order.pickup)}<br>${order.lines.map(line=>esc(line.name)+" × "+line.qty).join(", ")}<br>Total: ₹${order.total} · ${esc(order.date)}<br>Payment: ${esc(order.paymentStatus||"Not recorded")}<br>Reference: ${esc(order.paymentRef||"Not provided")}<br>Payment screenshot: ${order.screenshot?"Attached ✓":order.screenshotSelected?"Selected (image not saved)":"Not attached"}</p>${order.screenshot?`<img class="order-shot" src="${order.screenshot}" alt="Payment screenshot for order ${esc(order.id)}">`:""}</div>`).join(""):`<p class="muted">No orders placed yet.</p>`}
+function renderAll(){renderItems();renderCart();renderOrders()}
+document.querySelectorAll("[data-cat]").forEach(button=>button.onclick=()=>{cat=button.dataset.cat;document.querySelectorAll("[data-cat]").forEach(b=>b.classList.toggle("active",b===button));moveInk();withVT(renderItems)});$("search").oninput=renderItems;$("status").onchange=()=>withVT(renderItems);
+$("place").onclick=()=>{if(!cart.length)return;if(!$("student").value.trim()||!$("roll").value.trim()||!$("phone").value.trim())return alert("Please enter your name, student ID, and phone number.");const phone=$("phone").value.trim();if(!/^\d{10}$/.test(phone))return alert("Please enter a valid 10-digit phone number.");for(const line of cart){const item=items.find(x=>x.id===line.id);if(!item||item.quantity<line.qty)return alert("Stock changed. Please check your cart again.")}const total=cart.reduce((sum,line)=>sum+items.find(item=>item.id===line.id).price*line.qty,0);const order={id:"CF"+Date.now().toString().slice(-7),student:$("student").value.trim(),roll:$("roll").value.trim(),phone,pickup:$("pickup").value,status:"Pending · payment review required",paymentStatus:"Awaiting owner verification",paymentRef:$("paymentRef").value.trim(),screenshotSelected:!!shotData,screenshot:shotData,total,date:new Date().toLocaleString(),lines:cart.map(line=>({name:items.find(item=>item.id===line.id).name,qty:line.qty}))};cart.forEach(line=>{items.find(item=>item.id===line.id).quantity-=line.qty});orders.unshift(order);cart=[];save();renderAll();$("student").value="";$("roll").value="";$("phone").value="";$("paymentRef").value="";clearShot();alert("Pre-order submitted. Payment status: awaiting owner verification. Order number: "+order.id)};
+$("settingsBtn").onclick=e=>{e.stopPropagation();$("settingsPanel").classList.toggle("closed")};document.addEventListener("click",e=>{if(!e.target.closest(".header-actions"))$("settingsPanel").classList.add("closed")});$("bwBtn").onclick=()=>{document.body.classList.add("theme-bw");CH_LS.setItem("campusfind-theme","bw")};$("colorBtn").onclick=()=>{document.body.classList.remove("theme-bw");CH_LS.setItem("campusfind-theme","color")};if(CH_LS.getItem("campusfind-theme")==="bw")document.body.classList.add("theme-bw");
+$("startExploring").onclick=()=>{const welcome=$("welcomeScreen");if(welcome.classList.contains("leaving"))return;welcome.classList.add("leaving");document.body.classList.remove("intro","locked");document.body.classList.add("ready");setTimeout(()=>{welcome.style.display="none"},1050)};
+$("cartJump").onclick=()=>{$("cartPanel").scrollIntoView({behavior:"smooth",block:"start"})};
+$("copyUpi").onclick=async()=>{try{await navigator.clipboard.writeText("8590160800@nyes");$("copyUpi").textContent="Copied!";toast("Copied!")}catch(e){alert("UPI ID: 8590160800@nyes")}};
+$("copyAmount").onclick=async()=>{const amount=$("total").textContent.replace("₹","").trim();try{await navigator.clipboard.writeText(amount);$("copyAmount").textContent="Amount copied!";toast("Amount copied!")}catch(e){alert("Order total: ₹"+amount)}};
+let shotData="";
+function clearShot(){shotData="";$("paymentScreenshot").value="";$("shotPv").hidden=true;$("shotImg").removeAttribute("src")}
+function compressImage(file){return new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=rej;fr.onload=()=>{const img=new Image();img.onerror=rej;img.onload=()=>{let max=1100,q=.78,out="";for(let i=0;i<6;i++){const k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);out=c.toDataURL("image/jpeg",q);if(out.length<260000)break;max*=.82;q=Math.max(.5,q-.06)}res(out)};img.src=fr.result};fr.readAsDataURL(file)})}
+$("paymentScreenshot").onchange=async()=>{const f=$("paymentScreenshot").files[0];if(!f){clearShot();return}if(!/^image\//.test(f.type)){alert("Please choose an image file.");clearShot();return}if(f.size>8*1024*1024){alert("Please choose an image under 8 MB.");clearShot();return}try{shotData=await compressImage(f);$("shotImg").src=shotData;$("shotInfo").textContent=f.name+" · "+Math.round(shotData.length*.75/1024)+" KB (saved with your order)";$("shotPv").hidden=false}catch(e){alert("Could not read this image. Try another screenshot.");clearShot()}};
+$("shotRemove").onclick=clearShot;
+
+renderAll();
+if(location.hash==="#store"||location.hash==="#admin"){$("welcomeScreen").style.display="none";document.body.classList.remove("intro","locked");document.body.classList.add("ready")}
+(function(){const pc=document.getElementById("pageCurtain");if(!pc)return;
+function open(){pc.classList.add("anim","above");setTimeout(()=>document.documentElement.classList.remove("arrive"),20)}
+if(document.documentElement.classList.contains("arrive"))requestAnimationFrame(()=>requestAnimationFrame(open));
+document.addEventListener("click",e=>{const a=e.target.closest("a.page-link");if(!a||e.metaKey||e.ctrlKey)return;e.preventDefault();if(reduce){location.href=a.href;return}document.documentElement.classList.remove("arrive");pc.className="page-curtain";void pc.offsetWidth;pc.classList.add("anim","cover");setTimeout(()=>{location.href=a.getAttribute("href")},800)});
+addEventListener("pageshow",e=>{if(e.persisted){pc.className="page-curtain above"}})})();
+
+addEventListener("storage",e=>{if(e.key&&e.key.startsWith("campusfind")){items=load("campusfind-preorder-items",seed);cart=load("campusfind-preorder-cart",[]);orders=load("campusfind-preorder-orders",[]);renderAll()}});
+function bump(){const c=$("cartCount");c.classList.remove("bump");void c.offsetWidth;c.classList.add("bump")}
+function fly(src,item){if(!src||reduce)return;const a=src.getBoundingClientRect(),b=$("cartJump").getBoundingClientRect(),d=document.createElement("div");d.className="fly";d.textContent=item.emoji||emoji[item.category];document.body.appendChild(d);const x0=a.left+a.width/2-19,y0=a.top+a.height/2-19,x1=b.left+b.width/2-19,y1=b.top+b.height/2-19;d.animate([{transform:`translate(${x0}px,${y0}px) scale(1)`,opacity:1},{transform:`translate(${(x0+x1)/2}px,${Math.min(y0,y1)-120}px) scale(1.25)`,opacity:1,offset:.5},{transform:`translate(${x1}px,${y1}px) scale(.35)`,opacity:.4}],{duration:800,easing:"cubic-bezier(.5,0,.3,1)"}).onfinish=()=>d.remove()}
+function moveInk(){const a=document.querySelector(".tab.active"),ink=$("tabInk");if(!a)return;ink.style.width=a.offsetWidth+"px";ink.style.transform=`translateX(${a.offsetLeft}px)`}
+addEventListener("resize",moveInk);document.fonts&&document.fonts.ready.then(moveInk);setTimeout(moveInk,50);
+// ripple on buttons
+document.addEventListener("pointerdown",e=>{const b=e.target.closest(".order,.primary,.welcome-button");if(!b||b.disabled||reduce)return;const r=b.getBoundingClientRect(),s=Math.max(r.width,r.height),sp=document.createElement("span");sp.className="ripple";sp.style.cssText=`width:${s}px;height:${s}px;left:${e.clientX-r.left-s/2}px;top:${e.clientY-r.top-s/2}px`;b.appendChild(sp);setTimeout(()=>sp.remove(),700)});
+// header + progress
+const hdr=$("topbar"),prog=$("progress");function onScroll(){const y=scrollY,h=document.documentElement.scrollHeight-innerHeight;hdr.classList.toggle("scrolled",y>10);prog.style.transform=`scaleX(${h>0?y/h:0})`}addEventListener("scroll",onScroll,{passive:true});onScroll();
+// scroll reveal
+if("IntersectionObserver"in window){const io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){en.target.classList.add("in");io.unobserve(en.target)}}),{threshold:.12,rootMargin:"0px 0px -40px 0px"});document.querySelectorAll(".sr").forEach(el=>io.observe(el))}else document.querySelectorAll(".sr").forEach(el=>el.classList.add("in"));
+
+
+</script>
+<div class="admin-view" id="adminView" aria-label="Admin"></div>
+<script type="application/json" id="adminSrc">"<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>CampusHub \u2014 Admin Datasheet<\/title>\n<link rel=\"preconnect\" href=\"https://api.fontshare.com\">\n<link href=\"https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800&f[]=satoshi@400,500,700&display=swap\" rel=\"stylesheet\">\n<style>\n:root{\n  --paper:#f4efe6;--paper-2:#ebe4d6;--card:#fffdf8;--ink:#1c1a17;--ink-2:#4a463f;--muted:#7a7468;\n  --line:#ddd4c3;--accent:#e2552b;--accent-ink:#fff;--forest:#1f4d3a;--sun:#f2b632;\n  --ok-bg:#e1efe4;--ok:#1f6b41;--low-bg:#fbedcc;--low:#8a5a00;--out-bg:#f8dfd8;--out:#a3341b;\n  --r:18px;--r-lg:28px;--ease:cubic-bezier(.22,1,.36,1);--ease-io:cubic-bezier(.76,0,.24,1);\n  --display:'Cabinet Grotesk','Segoe UI',sans-serif;--body:'Satoshi','Segoe UI',sans-serif;\n}\n*{box-sizing:border-box}\nhtml{scroll-behavior:smooth}\nbody{margin:0;font:16px/1.55 var(--body);color:var(--ink);background:var(--paper);min-height:100vh;-webkit-font-smoothing:antialiased;overflow-x:hidden}\nbody.theme-bw{filter:grayscale(1)}\nbody.locked{overflow:hidden}\nbody:before{content:\"\";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.35;background-image:radial-gradient(#00000014 1px,transparent 1px);background-size:22px 22px}\n::selection{background:var(--accent);color:#fff}\nh1,h2,h3{font-family:var(--display);letter-spacing:-.02em;margin:0}\nbutton,input,select{font:inherit;color:inherit}\nbutton{cursor:pointer}\n:focus-visible{outline:2px solid var(--accent);outline-offset:3px}\n.hidden{display:none!important}\n.muted{color:var(--muted);font-size:14px;line-height:1.55}\n\n/* progress bar */\n.progress{position:fixed;top:0;left:0;height:3px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:linear-gradient(90deg,var(--accent),var(--sun));z-index:60}\n\n/* ===== Welcome ===== */\n.welcome-screen{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:24px 16px;overflow-y:auto;color:#f7f2e8}\n.welcome-screen .curtain{position:absolute;left:0;right:0;height:50.5%;background:var(--forest);transition:transform 1s var(--ease-io)}\n.welcome-screen .curtain.top{top:0}\n.welcome-screen .curtain.bottom{bottom:0}\n.welcome-screen .curtain.top:after{content:\"\";position:absolute;inset:0;background-image:radial-gradient(#ffffff14 1px,transparent 1px);background-size:22px 22px}\n.welcome-screen .curtain.bottom:after{content:\"\";position:absolute;inset:0;background-image:radial-gradient(#ffffff14 1px,transparent 1px);background-size:22px 22px}\n.welcome-screen.leaving{pointer-events:none}\n.welcome-screen.leaving .curtain.top{transform:translateY(-101%)}\n.welcome-screen.leaving .curtain.bottom{transform:translateY(101%)}\n.welcome-content{position:relative;z-index:2;width:100%;max-width:920px;text-align:center;transition:opacity .45s var(--ease),transform .6s var(--ease),filter .5s}\n.welcome-screen.leaving .welcome-content{opacity:0;transform:scale(.94);filter:blur(6px)}\n.welcome-logo{display:inline-flex;align-items:center;gap:10px;font:800 13px/1 var(--body);letter-spacing:.28em;padding:10px 16px;border:1px solid #ffffff38;border-radius:999px;background:#ffffff0d}\n.welcome-wave{font-size:46px;margin-top:22px;display:inline-block;transform-origin:70% 80%}\n.reveal-line{display:block;overflow:hidden;padding-bottom:.08em}\n.reveal-line>span{display:inline-block;transform:translateY(110%);animation:lineUp 1s var(--ease) forwards}\n.welcome-content h1{font-size:clamp(42px,8.4vw,104px);line-height:.95;font-weight:800;margin:14px 0 18px;letter-spacing:-.04em}\n.welcome-content h1 em{font-style:normal;color:var(--sun)}\n.welcome-subtitle{font-size:clamp(17px,2.4vw,22px);margin:0 auto;color:#f7f2e8;max-width:620px}\n.welcome-description{color:#c9d8cf;margin:10px 0 0}\n.welcome-features{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:34px 0 30px}\n.welcome-feature{display:flex;flex-direction:column;align-items:center;gap:4px;padding:20px 10px 18px;border-radius:var(--r);background:#ffffff0c;border:1px solid #ffffff1f;opacity:0;transform:translateY(24px);animation:rise .9s var(--ease) forwards;transition:background .3s,border-color .3s,transform .4s var(--ease)}\n.welcome-feature:hover{background:#ffffff18;border-color:var(--sun);transform:translateY(-6px)!important}\n.welcome-feature span{font-size:30px;margin-bottom:6px;transition:transform .5s var(--ease)}\n.welcome-feature:hover span{transform:scale(1.18) rotate(-8deg)}\n.welcome-feature b{font-family:var(--display);font-size:18px}\n.welcome-feature small{color:#b7cabe;font-size:12.5px}\n.welcome-button{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:12px;border:0;border-radius:999px;padding:17px 30px 17px 34px;background:var(--sun);color:var(--ink);font-weight:700;font-size:17px;opacity:0;animation:rise .9s var(--ease) 1.15s forwards;transition:transform .35s var(--ease),box-shadow .35s}\n.welcome-button:before{content:\"\";position:absolute;inset:0;background:#fff;transform:translateY(101%);transition:transform .45s var(--ease);border-radius:inherit}\n.welcome-button:hover:before{transform:translateY(0)}\n.welcome-button>*{position:relative}\n.welcome-button span.arr{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--sun);transition:transform .45s var(--ease)}\n.welcome-button:hover span.arr{transform:translateX(4px) rotate(-45deg)}\n.welcome-button:hover{box-shadow:0 18px 40px #0004}\n.welcome-hint{margin-top:22px;color:#9fb5a8;font-size:13px;letter-spacing:.06em;opacity:0;animation:rise .9s var(--ease) 1.3s forwards}\n\n/* ===== App shell ===== */\n.app{position:relative;z-index:1}\nbody.intro .app{transform:scale(.965);opacity:.4}\n.app{transition:transform 1.1s var(--ease),opacity .9s var(--ease)}\nheader{position:sticky;top:0;z-index:40;transition:padding .4s var(--ease)}\n.bar{max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:16px;padding:18px 28px;transition:padding .4s var(--ease)}\nheader:after{content:\"\";position:absolute;inset:0;z-index:-1;background:#f4efe6d9;backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid transparent;opacity:0;transition:opacity .4s,border-color .4s}\nheader.scrolled:after{opacity:1;border-color:var(--line)}\nheader.scrolled .bar{padding:10px 28px}\n.brand-block{display:flex;align-items:center;gap:12px;min-width:0}\n.brand-mark{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:var(--forest);font-size:22px;transition:transform .6s var(--ease)}\n.brand-block:hover .brand-mark{transform:rotate(-12deg) scale(1.06)}\nheader h1{font-size:26px;font-weight:800;line-height:1}\nheader p{margin:3px 0 0;font-size:10.5px;letter-spacing:.24em;color:var(--muted);font-weight:700}\n.nav{display:flex;gap:4px;margin-left:auto;padding:5px;border-radius:999px;background:var(--card);border:1px solid var(--line)}\n.nav a{padding:8px 14px;border-radius:999px;text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:500;transition:background .25s,color .25s}\n.nav a:hover{background:var(--paper-2);color:var(--ink)}\n.header-actions{display:flex;gap:8px;align-items:center;position:relative}\n.icon-btn{position:relative;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:19px;transition:transform .3s var(--ease),border-color .3s,background .3s}\n.icon-btn:hover{transform:translateY(-2px);border-color:var(--ink)}\n.icon-btn i{position:absolute;right:-4px;top:-4px;min-width:21px;height:21px;padding:0 5px;display:grid;place-items:center;border-radius:999px;font:700 11px/1 var(--body);font-style:normal;background:var(--accent);color:#fff;border:2px solid var(--paper)}\n.icon-btn i.bump{animation:bump .55s var(--ease)}\n.settings-panel{position:absolute;right:0;top:calc(100% + 10px);z-index:50;min-width:230px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:0 24px 50px #2a201033;display:flex;flex-direction:column;gap:8px;transform-origin:top right;transition:opacity .25s var(--ease),transform .35s var(--ease),visibility .25s}\n.settings-panel.closed{opacity:0;transform:scale(.92) translateY(-6px);visibility:hidden;pointer-events:none}\n.settings-panel b{font-family:var(--display);font-size:15px;margin-bottom:2px}\n\n.wrap{max-width:1320px;margin:0 auto;padding:0 28px}\n\n/* hero */\n.hero-panel{position:relative;display:grid;grid-template-columns:1.25fr .75fr;gap:28px;align-items:end;padding:44px 0 34px}\n.hero-kicker{display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent)}\n.hero-kicker:before{content:\"\";width:28px;height:2px;background:currentColor}\n.hero-panel h2{font-size:clamp(56px,11vw,150px);line-height:.88;font-weight:800;letter-spacing:-.05em;margin:14px 0 22px}\n.hero-panel h2 .reveal-line>span{animation-play-state:paused}\nbody.ready .hero-panel h2 .reveal-line>span{animation-play-state:running}\n.hero-panel p{max-width:560px;font-size:clamp(17px,1.8vw,21px);color:var(--ink-2);margin:0}\n.hero-side{position:relative;border-radius:var(--r-lg);background:var(--forest);color:#f7f2e8;padding:28px;min-height:250px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between}\n.hero-side:before{content:\"\";position:absolute;width:260px;height:260px;border-radius:50%;background:var(--sun);right:-90px;top:-110px;opacity:.95;animation:float 9s ease-in-out infinite}\n.hero-side:after{content:\"\";position:absolute;width:120px;height:120px;border-radius:50%;border:2px dashed #ffffff40;left:-30px;bottom:-40px;animation:spin 24s linear infinite}\n.hero-heart{position:relative;font-family:var(--display);font-size:clamp(26px,3vw,38px);line-height:1.05;font-weight:700}\n.hero-side .chips{position:relative;display:flex;gap:8px;flex-wrap:wrap}\n.hero-side .chips span{font-size:22px;width:48px;height:48px;display:grid;place-items:center;border-radius:14px;background:#ffffff14;border:1px solid #ffffff26;animation:float 5s ease-in-out infinite}\n.hero-side .chips span:nth-child(2){animation-delay:-1.2s}.hero-side .chips span:nth-child(3){animation-delay:-2.4s}.hero-side .chips span:nth-child(4){animation-delay:-3.6s}\n\n/* marquee */\n.marquee{overflow:hidden;border-block:1px solid var(--line);padding:14px 0;margin:6px 0 34px;white-space:nowrap;mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}\n.marquee div{display:inline-flex;gap:38px;animation:marq 30s linear infinite;font-family:var(--display);font-weight:700;font-size:20px;color:var(--ink-2)}\n.marquee div span:nth-child(even){color:var(--accent)}\n\n/* toolbar */\n.toolbar{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;margin-bottom:18px}\n.search{display:flex;gap:6px;align-items:center;padding:6px 6px 6px 20px;border-radius:999px;background:var(--card);border:1px solid var(--line);transition:border-color .3s,box-shadow .3s}\n.search:focus-within{border-color:var(--ink);box-shadow:0 0 0 5px #1c1a170d}\n.search svg{flex:none;color:var(--muted)}\n.search input{flex:1;min-width:0;border:0;background:transparent;padding:12px 6px;font-size:16px;outline:none}\n.search select{border:0;background:var(--paper-2);border-radius:999px;padding:11px 16px;font-weight:500;outline:none}\n.tabs{position:relative;display:flex;gap:2px;padding:5px;border-radius:999px;background:var(--card);border:1px solid var(--line);margin-bottom:28px;width:max-content;max-width:100%;overflow-x:auto;scrollbar-width:none}\n.tab-ink{position:absolute;top:5px;bottom:5px;left:0;border-radius:999px;background:var(--ink);transition:transform .5s var(--ease),width .5s var(--ease);z-index:0}\n.tab{position:relative;z-index:1;border:0;background:transparent;padding:10px 18px;border-radius:999px;font-weight:500;font-size:15px;color:var(--ink-2);white-space:nowrap;transition:color .35s}\n.tab.active{color:var(--paper)}\n.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:18px}\n.section-head h2,.panel h2{font-size:clamp(28px,3.4vw,40px);font-weight:800}\n.section-head .muted{font-family:var(--body);font-size:16px}\n\n/* grid + cards */\n.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;view-transition-name:none}\n.card{position:relative;display:flex;flex-direction:column;gap:8px;padding:20px;border-radius:var(--r);background:var(--card);border:1px solid var(--line);overflow:hidden;animation:cardIn .7s var(--ease) both;animation-delay:calc(var(--i,0)*55ms);transition:transform .45s var(--ease),box-shadow .45s var(--ease),border-color .3s}\n.card:before{content:\"\";position:absolute;inset:auto -40% -60% auto;width:200px;height:200px;border-radius:50%;background:var(--paper-2);transition:transform .7s var(--ease);z-index:0}\n.card>*{position:relative;z-index:1}\n.card:hover{transform:translateY(-6px);box-shadow:0 22px 40px -18px #3a2a1040;border-color:#c9bea9}\n.card:hover:before{transform:scale(1.6)}\n.top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}\n.emoji{display:grid;place-items:center;width:56px;height:56px;border-radius:16px;background:var(--paper);font-size:28px;transition:transform .6s var(--ease)}\n.card:hover .emoji{transform:rotate(-10deg) scale(1.08)}\n.card h3{font-size:21px;font-weight:700;line-height:1.15;margin-top:8px}\n.badge{font-size:11.5px;font-weight:700;padding:6px 10px;border-radius:999px;display:inline-flex;align-items:center;gap:6px}\n.badge:before{content:\"\";width:6px;height:6px;border-radius:50%;background:currentColor}\n.badge.available:before{animation:pulse 1.8s infinite}\n.available{background:var(--ok-bg);color:var(--ok)}.low{background:var(--low-bg);color:var(--low)}.out{background:var(--out-bg);color:var(--out)}\n.card-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:14px;border-top:1px dashed var(--line)}\n.price{font-family:var(--display);font-weight:800;font-size:22px}\n.order,.primary{position:relative;overflow:hidden;border:0;border-radius:999px;padding:11px 18px;font-weight:700;font-size:14px;background:var(--ink);color:var(--paper);transition:transform .3s var(--ease),background .3s}\n.order:hover:not(:disabled),.primary:hover{background:var(--accent);transform:translateY(-2px)}\n.order:active:not(:disabled),.primary:active{transform:scale(.96)}\n.order:disabled{background:var(--paper-2);color:var(--muted);cursor:not-allowed}\n.ripple{position:absolute;border-radius:50%;background:#ffffff66;transform:scale(0);animation:ripple .7s ease-out forwards;pointer-events:none}\n.empty{grid-column:1/-1;text-align:center;padding:50px 20px;border:1.5px dashed var(--line);border-radius:var(--r);color:var(--muted);animation:cardIn .5s var(--ease)}\n\n/* panels */\n.panels{display:grid;grid-template-columns:1fr;gap:20px;margin-top:56px}\n.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:clamp(20px,3vw,34px);scroll-margin-top:90px}\n.panel h2{margin-bottom:14px}\n.cart-panel{background:var(--ink);color:var(--paper);border-color:var(--ink)}\n.cart-panel .muted,.cart-panel label{color:#b3ab9c}\n.cart-panel .line{border-color:#ffffff1f}\n.cart-panel input,.cart-panel select{background:#ffffff0d;border-color:#ffffff26;color:var(--paper)}\n.cart-panel select option{color:var(--ink)}\n.cart-panel input::placeholder{color:#8d8678}\n.line{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:14px 0;animation:slideIn .5s var(--ease) both}\n.line:last-child{border-bottom:0}\n.qty{display:flex;align-items:center;gap:10px}\n.qty button{width:34px;height:34px;border-radius:50%;border:1px solid currentColor;background:transparent;font-weight:700;transition:background .25s,color .25s,transform .2s}\n.qty button:hover{background:var(--paper);color:var(--ink)}\n.qty button:active{transform:scale(.9)}\n.checkout{animation:expand .6s var(--ease)}\n.total{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--display);font-size:24px;font-weight:800;margin:18px 0;padding:16px 0;border-block:1px solid #ffffff1f}\n.total #total{font-size:36px;color:var(--sun)}\n.fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}\n.fields label,.payment-box label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px;letter-spacing:.02em}\ninput,select{padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--paper);transition:border-color .25s,box-shadow .25s}\ninput:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px #e2552b22}\n.fields input,.fields select{width:100%}\n.payment-box{margin:20px 0;padding:22px;border-radius:var(--r);background:#ffffff0a;border:1px solid #ffffff1f;display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:22px;align-items:center}\n.payment-box h3{font-size:22px;margin-bottom:6px}\n.upi-id{font-family:var(--display);font-weight:800;font-size:clamp(20px,2.4vw,26px);word-break:break-word;color:var(--sun);margin:8px 0}\n.qr-image{width:100%;max-width:200px;background:#fff;padding:12px;border-radius:16px;display:block;margin:auto;transition:transform .5s var(--ease)}\n.qr-image:hover{transform:scale(1.04) rotate(-1.5deg)}\n.payment-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 16px}\n.payment-box input[type=file]{width:100%;font-size:13px}\n.smallbtn{padding:9px 14px;font-size:13px;font-weight:700;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);transition:background .25s,color .25s,transform .25s var(--ease),border-color .25s}\n.smallbtn:hover{transform:translateY(-1px);border-color:var(--ink)}\n.cart-panel .smallbtn{background:transparent;color:var(--paper);border-color:#ffffff40}\n.cart-panel .smallbtn:hover{background:var(--paper);color:var(--ink)}\n.cart-panel .primary{background:var(--sun);color:var(--ink);padding:15px 26px;font-size:15px}\n.cart-panel .primary:hover{background:#fff}\n.orderbox{border:1px solid var(--line);padding:16px 18px;border-radius:var(--r);margin:12px 0;background:var(--paper);animation:slideIn .5s var(--ease) both}\n.orderbox b{font-family:var(--display);font-size:17px}\n.orderbox select{margin-left:6px;padding:7px 10px}\n.phone-link{font-weight:700;text-decoration:none;color:var(--accent)}\n.actions{display:flex;gap:8px;flex-wrap:wrap}\n#manageList h3{font-size:20px;margin:26px 0 6px}\n.form-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}\n.ghost{border:1px solid var(--line);background:transparent;border-radius:999px;padding:11px 18px;font-weight:700;font-size:14px;transition:border-color .25s,transform .25s}\n.ghost:hover{border-color:var(--ink);transform:translateY(-2px)}\n.note{margin-top:20px;border-radius:var(--r);padding:16px 18px;font-size:13.5px;background:var(--low-bg);color:#5d4300;border:1px solid #edd59a}\n.footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--muted);padding:34px 0 40px}\n.footer .big{font-family:var(--display);font-size:clamp(48px,9vw,120px);font-weight:800;letter-spacing:-.05em;color:var(--ink);line-height:.9;width:100%;margin-bottom:14px}\n\n/* fly dot + toast */\n.fly{position:fixed;z-index:80;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:20px;background:var(--sun);pointer-events:none;box-shadow:0 10px 24px #0003}\n.toast-wrap{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:90;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}\n.toast{background:var(--ink);color:var(--paper);padding:13px 20px;border-radius:14px;font-size:14px;font-weight:500;box-shadow:0 18px 40px #0003;max-width:min(92vw,520px);text-align:center;animation:toastIn .5s var(--ease) both}\n.toast.out{animation:toastOut .4s var(--ease) forwards}\n\n/* scroll reveal (content visible without JS) */\n.js .sr{opacity:0;transform:translateY(36px);transition:opacity .9s var(--ease),transform .9s var(--ease)}\n.js .sr.in{opacity:1;transform:none}\n\n@keyframes lineUp{to{transform:translateY(0)}}\n@keyframes rise{to{opacity:1;transform:translateY(0)}}\n@keyframes cardIn{from{opacity:0;transform:translateY(22px) scale(.97)}to{opacity:1;transform:none}}\n@keyframes slideIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}\n@keyframes expand{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}\n@keyframes bump{0%{transform:scale(1)}35%{transform:scale(1.55)}65%{transform:scale(.9)}100%{transform:scale(1)}}\n@keyframes pulse{0%{box-shadow:0 0 0 0 currentColor}70%{box-shadow:0 0 0 6px transparent}100%{box-shadow:0 0 0 0 transparent}}\n@keyframes ripple{to{transform:scale(4);opacity:0}}\n@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}\n@keyframes spin{to{transform:rotate(360deg)}}\n@keyframes marq{to{transform:translateX(-50%)}}\n@keyframes wave{0%,60%,100%{transform:rotate(0)}10%,30%{transform:rotate(16deg)}20%,40%{transform:rotate(-8deg)}}\n@keyframes toastIn{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:none}}\n@keyframes toastOut{to{opacity:0;transform:translateY(10px) scale(.96)}}\n.welcome-wave{animation:wave 2.4s ease-in-out .9s infinite}\n::view-transition-old(root),::view-transition-new(root){animation-duration:.35s}\n\n@media(max-width:980px){.nav{display:none}.hero-panel{grid-template-columns:1fr}.hero-side{min-height:200px}.fields{grid-template-columns:1fr 1fr}}\n@media(max-width:640px){\n  .bar,header.scrolled .bar{padding:12px 16px}.wrap{padding:0 16px}\n  header h1{font-size:22px}header p{font-size:9px;letter-spacing:.16em}.brand-mark{width:38px;height:38px;font-size:19px;border-radius:12px}\n  .icon-btn{width:40px;height:40px;font-size:17px}\n  .hero-panel{padding:26px 0 24px}\n  .toolbar{grid-template-columns:1fr}\n  .search{flex-wrap:wrap;border-radius:22px;padding:6px 6px 6px 16px}.search select{width:100%}\n  .tabs{width:100%}\n  .grid,.fields{grid-template-columns:1fr}\n  .payment-box{grid-template-columns:1fr}.qr-image{max-width:180px}\n  .line{flex-wrap:wrap}\n  .welcome-features{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:24px 0}\n  .welcome-wave{font-size:38px}\n}\n@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.js .sr{opacity:1;transform:none}.reveal-line>span{transform:none}}\n.payment-box,.payment-box>*{min-width:0}.shot-pv{max-width:100%;color:var(--ink);display:flex;align-items:center;gap:12px;margin-top:10px;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--card);animation:cardIn .4s var(--ease) both}.shot-pv[hidden]{display:none}.shot-pv img{flex:none;width:54px;height:54px;object-fit:cover;object-position:top;border-radius:10px;border:1px solid var(--line)}.shot-pv div{flex:1;min-width:0}.shot-pv b{display:block;font-size:14px;color:var(--ink)}.shot-pv small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.shot-pv .smallbtn{flex:none;color:var(--ink);background:transparent;border:1px solid var(--line)}.shot-pv .smallbtn:hover{border-color:var(--accent);color:var(--accent)}.order-shot{display:block;margin-top:10px;width:84px;height:84px;object-fit:cover;object-position:top;border-radius:12px;border:1px solid var(--line)}\n/* page-to-page curtain */\n.page-curtain{position:fixed;inset:0;z-index:9998;display:grid;place-items:center;background:var(--forest);color:#f7f2e8;transform:translateY(100%);pointer-events:none}\n.page-curtain:after{content:\"\";position:absolute;inset:0;background-image:radial-gradient(#ffffff14 1px,transparent 1px);background-size:22px 22px}\nhtml.arrive .page-curtain,.page-curtain.cover{transform:none}\n.page-curtain.above{transform:translateY(-100%)}\n.page-curtain.anim{transition:transform .85s var(--ease-io)}\n.pc-inner{position:relative;z-index:1;display:flex;align-items:center;gap:14px;font:800 clamp(30px,5vw,54px)/1 var(--display);letter-spacing:-.03em;transition:opacity .4s,transform .6s var(--ease)}\n.pc-inner .brand-mark{background:var(--sun);width:58px;height:58px;font-size:28px;border-radius:18px}\n.page-curtain.above .pc-inner{opacity:0;transform:translateY(-30px)}\n.switch{display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 18px;border-radius:999px;background:var(--ink);color:var(--paper);text-decoration:none;font-weight:700;font-size:14px;transition:transform .3s var(--ease),background .3s}\n.switch:hover{background:var(--accent);transform:translateY(-2px)}\n.switch span{transition:transform .5s var(--ease)}.switch:hover span{transform:rotate(-12deg) scale(1.15)}\n@media(max-width:640px){.switch{height:40px;padding:0 13px;font-size:13px}}\n.nav a{white-space:nowrap}header p{white-space:nowrap}\n@media(max-width:1240px){.nav{display:none}}\n@media(max-width:640px){header p{display:none}}\n@media(max-width:400px){.switch{padding:0 11px}.switch span{display:none}}\n.brand-mark{flex:none}\n@media(max-width:400px){.bar{gap:8px}header h1{font-size:19px}.header-actions{gap:6px}}\n.ds-hero{padding-bottom:28px}\n.ds-hero h2{font-size:clamp(52px,9vw,128px)}\n.big-num{display:block;font-size:clamp(40px,5vw,64px);color:var(--sun);margin-top:6px;letter-spacing:-.03em}\n.ds-updated{position:relative;font-size:13px;color:#c9d8cf}\n.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:6px 0 20px}\n.kpi{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;display:flex;flex-direction:column;gap:2px;transition:transform .45s var(--ease),box-shadow .45s var(--ease),opacity .9s var(--ease)}\n.kpi:hover{transform:translateY(-4px);box-shadow:0 20px 36px -20px #3a2a1050}\n.kpi small{font-size:12.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}\n.kpi b{font:800 clamp(30px,3.4vw,44px)/1.05 var(--display);letter-spacing:-.03em;margin-top:6px}\n.kpi span{font-size:13px;color:var(--muted)}\n.kpi:after{content:\"\";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--ink)}\n.kpi.ok:after{background:var(--ok)}.kpi.low:after{background:var(--sun)}.kpi.out:after{background:var(--accent)}\n.kpis .kpi:nth-child(2){transition-delay:.05s}.kpis .kpi:nth-child(3){transition-delay:.1s}.kpis .kpi:nth-child(4){transition-delay:.15s}.kpis .kpi:nth-child(6){transition-delay:.05s}.kpis .kpi:nth-child(7){transition-delay:.1s}.kpis .kpi:nth-child(8){transition-delay:.15s}\n.panels-ds{display:grid;gap:20px}\n.panel{margin-bottom:20px}\n.panel-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}\n.panel-head h2{margin:0}\n.sheet-actions{display:flex;gap:8px;flex-wrap:wrap}\n.bars{display:grid;gap:18px}\n.bar-row{display:grid;grid-template-columns:200px 1fr 140px auto;gap:18px;align-items:center}\n.bar-label{display:flex;align-items:center;gap:10px}.bar-label b{font-family:var(--display);font-size:17px}\n.emoji.sm{width:36px;height:36px;font-size:18px;border-radius:11px;flex:none}\n.bar-track{height:40px;border-radius:12px;background:var(--paper);overflow:hidden}\n.bar-fill{height:100%;width:0;border-radius:12px;background:var(--ink);display:flex;align-items:center;justify-content:flex-end;padding:0 12px;color:var(--paper);font-weight:700;font-size:13px;white-space:nowrap;transition:width 1.2s var(--ease) var(--d);min-width:0}\n.bars.go .bar-fill{width:max(var(--w),92px)}\n.bar-row:nth-child(2) .bar-fill{background:var(--forest)}.bar-row:nth-child(3) .bar-fill{background:var(--accent)}\n.stack{display:flex;height:12px;border-radius:99px;overflow:hidden;background:var(--paper);gap:2px}\n.stack i{display:block;transform:scaleX(0);transform-origin:left;transition:transform 1s var(--ease) .4s}\n.bars.go .stack i{transform:none}\n.stack i.available{background:var(--ok)}.stack i.low{background:var(--sun)}.stack i.out{background:var(--accent)}\n.stack-legend{display:flex;gap:6px}\n.stack-legend .badge{padding:4px 9px}\n.sheet-tools{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:16px}\n.sheet-tools .search{flex:1 1 300px;padding:4px 6px 4px 18px}\n.sheet-tools .search input{padding:10px 6px}\n.sheet-tools .tabs{margin:0}\n.sheet-tools select{border-radius:999px;padding:12px 16px;background:var(--card)}\n.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:var(--r);max-height:640px}\n.sheet{width:100%;border-collapse:separate;border-spacing:0;font-size:14px}\n.sheet th{position:sticky;top:0;z-index:1;background:var(--paper-2);text-align:left;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2);padding:13px 14px;white-space:nowrap;border-bottom:1px solid var(--line)}\n.sheet th[data-sort]{cursor:pointer;user-select:none;transition:color .2s}\n.sheet th[data-sort]:hover{color:var(--accent)}\n.sheet th[data-sort]:after{content:attr(data-dir);margin-left:6px;color:var(--accent)}\n.sheet th.sorted{color:var(--ink)}\n.sheet td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}\n.sheet tbody tr{animation:rowIn .55s var(--ease) both;animation-delay:calc(min(var(--i,0),14)*35ms);transition:background .2s}\n.sheet tbody tr:hover{background:#f6efe1}\n.sheet tbody tr:last-child td{border-bottom:0}\n.sheet .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}\n.sheet .nowrap{white-space:nowrap}\n.mono{font-variant-numeric:tabular-nums;color:var(--ink-2)}\n.cell-name{display:flex;align-items:center;gap:10px;font-weight:700;white-space:nowrap}\n.qbar{display:inline-block;width:46px;height:6px;border-radius:9px;background:var(--paper-2);margin-right:10px;vertical-align:middle;overflow:hidden}\n.qbar i{display:block;height:100%;background:var(--forest);border-radius:9px}\n.sheet .badge{white-space:nowrap}\n.sheet .empty{border:0;padding:30px}\n.cart-panel .table-wrap{border-color:#ffffff26}\n.sheet.dark th{background:#ffffff10;color:#d8d0c0;border-color:#ffffff1f}\n.sheet.dark td{border-color:#ffffff1f}\n.sheet.dark tbody tr:hover{background:#ffffff0a}\n.empty.dark{color:#b3ab9c;border-color:#ffffff26}\n.footer .link{color:var(--accent);font-weight:700;text-decoration:none}\n@keyframes rowIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}\n@media(max-width:980px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.bar-row{grid-template-columns:1fr;gap:8px}}\n@media(max-width:640px){.kpis{gap:10px}.kpi{padding:14px}.sheet-tools .tabs{width:100%}.sheet-tools select{width:100%}}\n.sheet td{white-space:nowrap}\n.sheet td.wrap{white-space:normal;min-width:180px}\n.admin-pill{font:700 10px/1 var(--body);font-style:normal;letter-spacing:.14em;text-transform:uppercase;background:var(--accent);color:#fff;padding:5px 8px;border-radius:999px;vertical-align:middle;margin-left:4px;position:relative;top:-3px}\n.hero-cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}\n.primary.big{padding:15px 26px;font-size:15px}\n.primary.danger{background:var(--accent)}.primary.danger:hover{background:#b9401c}\n.alerts{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 24px;margin-bottom:20px}\n.alerts-head{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;margin-bottom:14px}\n.alerts-head b{font-family:var(--display);font-size:20px}\n.alerts-head.ok{margin:0}.alerts-head.ok b:before{content:\"\u2713 \";color:var(--ok)}\n.alert-list{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:thin}\n.alert-chip{flex:none;display:flex;align-items:center;gap:10px;padding:10px 10px 10px 12px;border-radius:16px;border:1px solid var(--line);background:var(--paper);animation:cardIn .5s var(--ease) both}\n.alert-chip.out{border-color:#efc2b5}.alert-chip.low{border-color:#ecd59a}\n.alert-chip b{display:block;font-size:14px;white-space:nowrap}.alert-chip small{font-size:12px;color:var(--muted)}\n.alert-chip.out small{color:var(--out)}.alert-chip.low small{color:var(--low)}\n.stepper{display:inline-flex;align-items:center;gap:4px;padding:3px;border-radius:999px;border:1px solid var(--line);background:var(--paper)}\n.stepper button{width:28px;height:28px;border-radius:50%;border:0;background:transparent;font-weight:700;font-size:15px;transition:background .2s,transform .15s}\n.stepper button:hover:not(:disabled){background:var(--ink);color:var(--paper)}\n.stepper button:active{transform:scale(.88)}.stepper button:disabled{opacity:.3;cursor:not-allowed}\n.stepper b{min-width:28px;text-align:center;font-variant-numeric:tabular-nums}\n.sheet td.act,.sheet th.act{text-align:right}\n.sheet td.act .smallbtn{padding:7px 12px;margin-left:4px}\n.smallbtn.del:hover{background:var(--accent);border-color:var(--accent);color:#fff}\n.sheet tr.flash td{animation:flash 1.6s var(--ease)}\n.sheet tr.leaving{animation:rowOut .38s var(--ease) forwards}\n.status-sel{padding:7px 30px 7px 12px;border-radius:999px;font-size:13px;font-weight:700;border:1px solid transparent;cursor:pointer}\n.status-sel.available{background:var(--ok-bg);color:var(--ok)}.status-sel.low{background:var(--low-bg);color:var(--low)}.status-sel.out{background:var(--out-bg);color:var(--out)}\n/* drawer */\n.overlay{position:fixed;inset:0;z-index:70;background:#1c1a1755;backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:opacity .4s,visibility .4s}\n.drawer{position:fixed;top:0;right:0;bottom:0;z-index:71;width:min(520px,100%);background:var(--card);box-shadow:-30px 0 60px #2a201033;padding:28px;overflow-y:auto;transform:translateX(105%);transition:transform .6s var(--ease);display:flex;flex-direction:column;gap:6px}\n.drawer-open .overlay{opacity:1;visibility:visible}.drawer-open .drawer{transform:none}.drawer-open{overflow:hidden}\n.drawer.shake{animation:shake .45s}\n.drawer-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}\n.drawer-head h2{font-size:34px;font-weight:800;margin-top:6px}\n.drawer .f{margin-top:14px}\n.drawer label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px}\n.drawer input{width:100%}\n.drawer .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}\n.drawer-open .drawer .f{animation:rise .6s var(--ease) both;opacity:0;transform:translateY(14px)}\n.drawer .f:nth-of-type(2){animation-delay:.05s}.drawer .f:nth-of-type(3){animation-delay:.1s}.drawer .f:nth-of-type(4){animation-delay:.15s}.drawer .f:nth-of-type(5){animation-delay:.2s}\n.err{display:block;min-height:0;color:var(--out);font-size:12px;font-weight:700;margin-top:4px;opacity:0;transition:opacity .2s}\n.bad .err{opacity:1}.bad input{border-color:var(--accent);box-shadow:0 0 0 4px #e2552b1c}\n.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:14px;background:var(--paper);border:1px solid var(--line)}\n.seg button{border:0;background:transparent;border-radius:10px;padding:10px 6px;font-weight:600;font-size:14px;transition:background .3s,color .3s}\n.seg button.on{background:var(--ink);color:var(--paper)}\n.num-in{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;background:var(--paper);overflow:hidden}\n.num-in:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px #e2552b22}\n.num-in input{border:0;background:transparent;text-align:center;box-shadow:none!important;-moz-appearance:textfield}\n.num-in input::-webkit-inner-spin-button{-webkit-appearance:none}\n.num-in button{flex:none;width:42px;height:44px;border:0;background:transparent;font-size:18px;font-weight:700;transition:background .2s}\n.num-in button:hover{background:var(--paper-2)}\n.preview-card{margin-top:18px}\n.pv-card{margin-top:8px;padding:18px;border-radius:var(--r);border:1px dashed #c9bea9;background:var(--paper);display:flex;flex-direction:column;gap:6px}\n.pv-card h3{font-size:20px}.pv-card .order{display:inline-block;pointer-events:none}\n.drawer-foot{position:sticky;bottom:-28px;margin:20px -28px -28px;padding:16px 28px;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px}\n/* dialog */\n.dialog{position:fixed;inset:0;z-index:95;display:grid;place-items:center;padding:20px;background:#1c1a1766;backdrop-filter:blur(3px);opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s}\n.dialog.open{opacity:1;visibility:visible}\n.dialog-card{width:min(420px,100%);background:var(--card);border-radius:var(--r-lg);padding:28px;text-align:center;transform:scale(.92) translateY(10px);transition:transform .45s var(--ease);box-shadow:0 30px 60px #0003}\n.dialog.open .dialog-card{transform:none}\n.dialog-icon{font-size:34px}.dialog-card h3{font-size:22px;margin:10px 0 22px}\n.dialog-actions{display:flex;gap:10px;justify-content:center}\n@keyframes flash{0%{background:#f2b63255}100%{background:transparent}}\n@keyframes rowOut{to{opacity:0;transform:translateX(30px)}}\n@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}\n@media(max-width:640px){.drawer{padding:22px}.drawer-foot{margin:20px -22px -22px;padding:14px 22px}.drawer-head h2{font-size:28px}.hero-cta .primary,.hero-cta .ghost{flex:1}.admin-pill{display:none}}\n.drawer{transform:translateX(calc(100% + 80px));visibility:hidden;transition:transform .6s var(--ease),visibility .6s}\n.drawer-open .drawer{visibility:visible}\n.sheet td.act,.sheet th.act{position:sticky;right:0;white-space:nowrap;box-shadow:-12px 0 14px -12px #3a2a1030}\n.sheet td.act{background:var(--card)}.sheet th.act{z-index:2}\n.sheet tbody tr:hover td.act{background:#f6efe1}\n.sheet tr.flash td.act{animation:none}\n@media(max-width:640px){.sheet td.act,.sheet th.act{position:static;box-shadow:none}}\n/* settings */\n.set-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:16px}\n.set-col{display:grid;gap:16px}\n.set-card{background:var(--paper);border:1px solid var(--line);border-radius:22px;padding:22px;position:relative;transition:border-color .3s,transform .4s var(--ease)}\n.set-card:hover{border-color:#d9cfbd}\n.set-card h3{font:800 22px/1.1 var(--display);margin:0 0 6px;letter-spacing:-.01em}\n.set-card>.muted{font-size:14px;line-height:1.5;margin:0 0 16px}\n.set-ico{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line);font-size:20px;margin-bottom:12px}\n.set-pw .pw input{background:var(--card)}\n.set-pw .primary{width:100%;justify-content:center;transition:background .3s}\n.set-pw .primary.done{background:var(--forest)}\n.set-pw form.shake{animation:shake .45s}\n.meter.on{display:grid}\n.set-meta{font-size:12.5px;color:var(--muted);margin:12px 0 0}\n.wrap-seg{display:grid;grid-template-columns:repeat(5,1fr)}.wrap-seg button{padding-left:4px;padding-right:4px;white-space:nowrap}\n.set-btn{margin-top:14px}\n.set-actions{display:flex;gap:10px;flex-wrap:wrap}\n.set-actions .set-btn{margin-top:14px}\n.set-btn:disabled{opacity:.45;cursor:not-allowed}\n.store-meter .sm-track{height:8px;border-radius:8px;background:var(--paper-2);overflow:hidden}\n.store-meter i{display:block;height:100%;width:2%;background:var(--forest);border-radius:8px;transition:width .8s var(--ease),background .3s}\n.store-meter i.mid{background:var(--sun)}.store-meter i.hi{background:var(--accent)}\n.store-meter small{display:block;margin-top:8px;color:var(--muted);font-size:12.5px}\n/* screenshot thumbs + viewer */\n.shot-thumb{display:inline-flex;align-items:center;gap:8px;padding:4px 12px 4px 4px;border-radius:12px;border:1px solid var(--line);background:var(--card);cursor:pointer;font:700 12.5px var(--body);color:var(--ink);transition:border-color .25s,transform .25s var(--ease),box-shadow .25s}\n.shot-thumb img{width:38px;height:38px;object-fit:cover;object-position:top;border-radius:9px;display:block}\n.shot-thumb:hover{border-color:var(--ink);transform:translateY(-2px);box-shadow:0 8px 18px #2a201018}\n.lightbox{position:fixed;inset:0;z-index:96;display:grid;place-items:center;padding:20px;background:#1c1a17b3;backdrop-filter:blur(6px);opacity:0;visibility:hidden;transition:opacity .3s,visibility .3s}\n.lightbox.open{opacity:1;visibility:visible}\n.lb-card{width:min(760px,100%);max-height:calc(100vh - 40px);display:flex;flex-direction:column;background:var(--card);border-radius:var(--r-lg);overflow:hidden;box-shadow:0 40px 90px #0006;transform:translateY(20px) scale(.97);transition:transform .5s var(--ease)}\n.lightbox.open .lb-card{transform:none}\n.lb-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;padding:20px 22px 14px}\n.lb-head h3{font:800 24px/1.1 var(--display);margin:6px 0 4px}.lb-head p{margin:0;font-size:13.5px}\n.lb-stage{position:relative;flex:1;min-height:220px;background:#16140f;display:grid;place-items:center;overflow:auto}\n.lb-stage img{max-width:100%;max-height:calc(100vh - 260px);display:block;cursor:zoom-in;transition:transform .45s var(--ease)}\n.lb-stage img.swap{animation:lbIn .45s var(--ease) both}\n@keyframes lbIn{from{opacity:0;transform:scale(.96)}}\n.lb-stage.zoomed{place-items:start}\n.lb-stage img.zoom{max-width:none;max-height:none;width:180%;cursor:zoom-out}\n.lb-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:44px;height:44px;border-radius:50%;border:0;background:#fffdf8e6;color:var(--ink);font-size:26px;line-height:1;cursor:pointer;box-shadow:0 6px 16px #0004}\n.lb-nav.prev{left:12px}.lb-nav.next{right:12px}.lb-nav[hidden]{display:none}\n.lb-hint{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:12px;color:#fff;background:#0007;padding:5px 10px;border-radius:999px;pointer-events:none}\n.lb-stage.zoomed .lb-hint{display:none}\n.lb-foot{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;padding:16px 22px;border-top:1px solid var(--line)}\n.lb-pay{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.lb-pay small{color:var(--muted);font-size:12.5px}\n.lb-actions{display:flex;gap:8px;flex-wrap:wrap}\n.danger-ghost{color:var(--out)}.danger-ghost:hover{border-color:var(--out)}\nbody.lb-open{overflow:hidden}\n@media(max-width:900px){.set-grid{grid-template-columns:1fr}}\n@media(max-width:640px){.lb-head{padding:16px}.lb-foot{padding:14px 16px}.lb-actions{width:100%}.lb-actions{display:grid;grid-template-columns:1fr 1fr}.lb-actions button{padding-left:8px;padding-right:8px;white-space:nowrap}#lbOk{grid-column:1/-1;order:-1}.wrap-seg{grid-template-columns:repeat(3,1fr)}.lb-stage img{max-height:calc(100vh - 330px)}.set-card{padding:18px}}\n.lock{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;padding:20px;background:var(--paper);overflow-y:auto;transition:opacity .55s var(--ease),visibility .55s,transform .7s var(--ease)}\n.lock-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}\n.lock-bg i{position:absolute;border-radius:50%;filter:blur(2px);opacity:.55}\n.lock-bg i:nth-child(1){width:520px;height:520px;left:-160px;top:-180px;background:radial-gradient(circle,#f2b63255,transparent 70%);animation:drift 14s ease-in-out infinite alternate}\n.lock-bg i:nth-child(2){width:600px;height:600px;right:-200px;bottom:-220px;background:radial-gradient(circle,#1f4d3a33,transparent 70%);animation:drift 17s ease-in-out infinite alternate-reverse}\n.lock-bg i:nth-child(3){width:340px;height:340px;right:18%;top:8%;background:radial-gradient(circle,#e2552b26,transparent 70%);animation:drift 12s ease-in-out infinite alternate}\n@keyframes drift{to{transform:translate(40px,30px) scale(1.08)}}\n.lock-card{position:relative;width:min(420px,100%);background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:34px 30px 22px;box-shadow:0 30px 80px #2a201022,0 2px 0 #fff inset;text-align:left;animation:lockIn .8s var(--ease) both}\n@keyframes lockIn{from{opacity:0;transform:translateY(24px) scale(.97)}}\n.lock-icon{width:62px;height:62px;border-radius:20px;display:grid;place-items:center;background:var(--ink);color:var(--sun);margin-bottom:18px;box-shadow:0 12px 26px #1c1a1733}\n.lock-icon .shackle{transition:transform .5s var(--ease);transform-origin:16px 10px}\n.lock.opening .lock-icon .shackle{transform:translateY(-2.5px) rotate(28deg)}\n.lock.opening .lock-icon{background:var(--forest)}\n.lock-kicker{font:700 11px/1 var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:10px}\n.lock-kicker:before{content:\"\";width:22px;height:2px;background:currentColor}\n.lock-card h2{font:800 34px/1.05 var(--display);letter-spacing:-.02em;margin:10px 0 8px}\n.lock-sub{color:var(--muted);font-size:14.5px;line-height:1.55;margin:0 0 20px}\n.lock-field{margin-bottom:14px}\n.lock-field label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px;letter-spacing:.02em}\n.pw{position:relative}\n.pw input{width:100%;font:500 16px var(--body);padding:14px 70px 14px 16px;border-radius:14px;border:1px solid var(--line);background:var(--paper);color:var(--ink);outline:none;transition:border-color .2s,box-shadow .2s,background .2s;letter-spacing:.04em}\n.pw input:focus{border-color:var(--ink);background:var(--card);box-shadow:0 0 0 4px #1c1a1712}\n.lock-field.bad input{border-color:var(--accent);box-shadow:0 0 0 4px #e2552b1f}\n.eye{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:0;background:transparent;font:700 12px var(--body);color:var(--ink-2);padding:8px 10px;border-radius:10px;cursor:pointer}\n.eye:hover{background:var(--paper-2)}\n.meter{display:none;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:8px}\n.lock.setup .meter,.lock.change .meter{display:grid}\n.meter i{height:4px;border-radius:4px;background:var(--paper-2);transition:background .3s}\n.meter[data-s=\"1\"] i:nth-child(-n+1){background:var(--accent)}\n.meter[data-s=\"2\"] i:nth-child(-n+2){background:var(--sun)}\n.meter[data-s=\"3\"] i:nth-child(-n+3){background:#7aa35a}\n.meter[data-s=\"4\"] i{background:var(--forest)}\n.lock-err{min-height:20px;margin:2px 0 10px;color:var(--accent);font-size:13.5px;font-weight:600}\n.lock-btn{width:100%;justify-content:center}\n.lock-btn:disabled{opacity:.55;cursor:not-allowed}\n.lock-foot{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)}\n.lock-link{background:none;border:0;padding:6px 0;font:600 13.5px var(--body);color:var(--ink-2);text-decoration:none;cursor:pointer}\n.lock-link:hover{color:var(--accent)}\n#fCur,#fCf,#lockCancel{display:none}\n.lock.setup #fCf,.lock.change #fCf,.lock.change #fCur,.lock.change #lockCancel{display:block}\n.lock.change #lockStore{display:none}\n.lock-card.shake{animation:shake .45s}\n.lock.hidden{opacity:0;visibility:hidden;pointer-events:none;transform:scale(1.04)}\n.lock.change{background:#1c1a1773;backdrop-filter:blur(6px)}.lock.change .lock-bg{display:none}\nbody.admin-locked .app{filter:blur(14px);visibility:hidden}\nbody.admin-locked{overflow:hidden}\n.app{transition:filter .7s var(--ease)}\n.lock-btn-hdr{height:46px;display:inline-flex;align-items:center;gap:7px}\n.lock-btn-hdr svg{width:16px;height:16px}\n.settings-panel .smallbtn{width:100%}\n.settings-panel b+b,.settings-panel .sp-sec{margin-top:8px}\n@media(max-width:640px){.lock-card{padding:28px 22px 18px}.lock-card h2{font-size:29px}.lock-btn-hdr span{display:none}.lock-btn-hdr{padding:0;width:42px;justify-content:center}}\n@media(prefers-reduced-motion:reduce){.lock-bg i,.lock-card{animation:none}}\n@media(max-width:640px){.ds .header-actions{gap:6px}.ds .switch{font-size:0;width:42px;height:42px;padding:0;justify-content:center;gap:0}.ds .switch span{display:inline;font-size:17px}.lock-btn-hdr{height:42px}}\n<\/style>\n<script>document.documentElement.classList.add('js')<\/script>\n<\/head>\n<body class=\"ds ready admin-locked\">\n<div class=\"progress\" id=\"progress\"><\/div>\n<div class=\"page-curtain\" id=\"pageCurtain\" aria-hidden=\"true\"><div class=\"pc-inner\"><div class=\"brand-mark\">\ud83c\udf93<\/div><span>CampusHub<\/span><\/div><\/div>\n\n<div class=\"lock\" id=\"lock\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"lockTitle\">\n <div class=\"lock-bg\" aria-hidden=\"true\"><i><\/i><i><\/i><i><\/i><\/div>\n <form class=\"lock-card\" id=\"lockForm\" novalidate autocomplete=\"off\">\n  <div class=\"lock-icon\" aria-hidden=\"true\"><svg viewBox=\"0 0 24 24\" width=\"30\" height=\"30\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"4\" y=\"10.5\" width=\"16\" height=\"10.5\" rx=\"2.5\"/><path class=\"shackle\" d=\"M8 10.5V7a4 4 0 0 1 8 0v3.5\"/><circle cx=\"12\" cy=\"15.6\" r=\"1.4\" fill=\"currentColor\"/><\/svg><\/div>\n  <div class=\"lock-kicker\" id=\"lockKicker\">CampusHub \u00b7 Admin<\/div>\n  <h2 id=\"lockTitle\">Admin access<\/h2>\n  <p class=\"lock-sub\" id=\"lockSub\">Enter the admin password to manage items, stock and orders.<\/p>\n  <div class=\"lock-field\" id=\"fCur\"><label for=\"lpCur\">Current password<\/label><div class=\"pw\"><input id=\"lpCur\" type=\"password\" autocomplete=\"current-password\"><button type=\"button\" class=\"eye\" aria-label=\"Show password\">Show<\/button><\/div><\/div>\n  <div class=\"lock-field\" id=\"fPw\"><label for=\"lpPw\" id=\"lpPwLabel\">Password<\/label><div class=\"pw\"><input id=\"lpPw\" type=\"password\" autocomplete=\"current-password\"><button type=\"button\" class=\"eye\" aria-label=\"Show password\">Show<\/button><\/div><div class=\"meter\" id=\"meter\" aria-hidden=\"true\"><i><\/i><i><\/i><i><\/i><i><\/i><\/div><\/div>\n  <div class=\"lock-field\" id=\"fCf\"><label for=\"lpCf\">Confirm password<\/label><div class=\"pw\"><input id=\"lpCf\" type=\"password\" autocomplete=\"new-password\"><button type=\"button\" class=\"eye\" aria-label=\"Show password\">Show<\/button><\/div><\/div>\n  <p class=\"lock-err\" id=\"lockErr\" role=\"alert\"><\/p>\n  <button class=\"primary big lock-btn\" id=\"lockBtn\" type=\"submit\"><span id=\"lockBtnTxt\">Unlock<\/span><\/button>\n  <div class=\"lock-foot\"><button type=\"button\" class=\"lock-link\" id=\"lockCancel\">Cancel<\/button><a class=\"lock-link\" id=\"lockStore\" href=\"#store\" data-go=\"store\">\u2190 Back to store<\/a><\/div>\n <\/form>\n<\/div>\n\n<div class=\"app\">\n<header id=\"topbar\"><div class=\"bar\">\n <a class=\"brand-block\" href=\"#store\" data-go=\"store\" style=\"text-decoration:none;color:inherit\"><div class=\"brand-mark\" aria-hidden=\"true\">\ud83c\udf93<\/div><div><h1>CampusHub <em class=\"admin-pill\">Admin<\/em><\/h1><p>EAT \u00b7 STUDY \u00b7 SHOP \u00b7 CONNECT<\/p><\/div><\/a>\n <nav class=\"nav\" aria-label=\"Sections\"><a href=\"#overview\">Overview<\/a><a href=\"#itemsSheet\">Manage items and stock<\/a><a href=\"#ordersSheet\">Orders<\/a><a href=\"#cartSheet\">Cart<\/a><a href=\"#settingsSheet\">Settings<\/a><\/nav>\n <div class=\"header-actions\">\n  <a class=\"switch\" href=\"#store\" data-go=\"store\"><span>\ud83d\uded2<\/span> Customer view<\/a>\n  <button type=\"button\" class=\"ghost lock-btn-hdr\" id=\"lockNowBtn\" aria-label=\"Lock admin page\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\"><rect x=\"4\" y=\"10.5\" width=\"16\" height=\"10.5\" rx=\"2.5\"/><path d=\"M8 10.5V7a4 4 0 0 1 8 0v3.5\"/><\/svg><span>Lock<\/span><\/button>\n  <button type=\"button\" class=\"icon-btn\" id=\"settingsBtn\" aria-label=\"\u2699\ufe0f Settings\">\u2699\ufe0f<\/button>\n  <div id=\"settingsPanel\" class=\"settings-panel closed\"><b>Appearance<\/b><button id=\"bwBtn\" class=\"smallbtn\">\u25d0 Black &amp; White<\/button><button id=\"colorBtn\" class=\"smallbtn\">\ud83c\udfa8 Colour Mode<\/button><b class=\"sp-sec\">Security<\/b><button id=\"changePwBtn\" class=\"smallbtn\">\ud83d\udd11 Change password<\/button><button id=\"allSetBtn\" class=\"smallbtn\">\u2699\ufe0f All settings<\/button><\/div>\n <\/div>\n<\/div><\/header>\n\n<div class=\"wrap\">\n <section class=\"hero-panel ds-hero\" id=\"overview\">\n  <div>\n   <div class=\"hero-kicker\">Admin \u00b7 Datasheet<\/div>\n   <h2><span class=\"reveal-line\"><span>Stock control<\/span><\/span><\/h2>\n   <p class=\"sr\">Add and update stock, manage pre-orders, and see every item, cart line and order saved by CampusHub in this browser.<\/p>\n   <div class=\"hero-cta sr\"><button class=\"primary big\" data-open-add>+ Add item<\/button><button class=\"ghost\" id=\"reset\">Reset sample data<\/button><\/div>\n  <\/div>\n  <div class=\"hero-side sr\">\n   <div class=\"hero-heart\">Stock value<br><span class=\"big-num\" data-count=\"stockValue\" data-prefix=\"\u20b9\">\u20b90<\/span><\/div>\n   <div class=\"ds-updated\" id=\"updated\">Updated just now<\/div>\n  <\/div>\n <\/section>\n\n <div class=\"kpis\" id=\"kpis\">\n  <div class=\"kpi sr\"><small>Total items<\/small><b data-count=\"items\">0<\/b><span>listed in the store<\/span><\/div>\n  <div class=\"kpi sr\"><small>Units in stock<\/small><b data-count=\"units\">0<\/b><span>across all categories<\/span><\/div>\n  <div class=\"kpi sr ok\"><small>Available<\/small><b data-count=\"available\">0<\/b><span>items<\/span><\/div>\n  <div class=\"kpi sr low\"><small>Low Stock<\/small><b data-count=\"low\">0<\/b><span>items (3 or fewer)<\/span><\/div>\n  <div class=\"kpi sr out\"><small>Out of Stock<\/small><b data-count=\"out\">0<\/b><span>items<\/span><\/div>\n  <div class=\"kpi sr\"><small>Orders<\/small><b data-count=\"orders\">0<\/b><span>placed<\/span><\/div>\n  <div class=\"kpi sr\"><small>Order total<\/small><b data-count=\"revenue\" data-prefix=\"\u20b9\">\u20b90<\/b><span>all orders<\/span><\/div>\n  <div class=\"kpi sr\"><small>In cart<\/small><b data-count=\"cart\">0<\/b><span>units waiting<\/span><\/div>\n <\/div>\n\n <section class=\"alerts sr\" id=\"alerts\"><\/section>\n\n <section class=\"panel sr\" id=\"breakdown\">\n  <div class=\"panel-head\"><h2>Stock by category<\/h2><span class=\"muted\">Units in stock and item status<\/span><\/div>\n  <div class=\"bars\" id=\"bars\"><\/div>\n <\/section>\n\n <section class=\"panel sr\" id=\"itemsSheet\">\n  <div class=\"panel-head\"><h2>\u2699\ufe0f Manage items and stock <span class=\"muted\" id=\"itemCount\"><\/span><\/h2>\n   <div class=\"sheet-actions\"><button class=\"primary\" data-open-add>+ Add item<\/button><button class=\"smallbtn\" data-export=\"items-csv\">Export CSV<\/button><button class=\"smallbtn\" data-export=\"items-json\">Export JSON<\/button><\/div><\/div>\n  <div class=\"sheet-tools\">\n   <div class=\"search\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" aria-hidden=\"true\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m20 20-3.5-3.5\"/><\/svg><input id=\"q\" placeholder=\"Search food, books, stationery, or location\u2026\"><\/div>\n   <div class=\"tabs\" id=\"tabs\"><span class=\"tab-ink\" id=\"tabInk\"><\/span><button class=\"tab active\" data-cat=\"All\">All items<\/button><button class=\"tab\" data-cat=\"Food\">\ud83c\udf54 Food<\/button><button class=\"tab\" data-cat=\"Books\">\ud83d\udcda Library books<\/button><button class=\"tab\" data-cat=\"Stationery\">\u270f\ufe0f Stationery<\/button><\/div>\n   <select id=\"status\"><option>All stock<\/option><option>Available<\/option><option>Low Stock<\/option><option>Out of Stock<\/option><\/select>\n  <\/div>\n  <div class=\"table-wrap\"><table class=\"sheet\" id=\"itemTable\">\n   <thead><tr><th data-sort=\"id\">ID<\/th><th data-sort=\"name\">Item name<\/th><th data-sort=\"category\">Category<\/th><th data-sort=\"location\">Location<\/th><th data-sort=\"detail\">Details<\/th><th data-sort=\"quantity\" class=\"num\">Quantity in stock<\/th><th data-sort=\"price\" class=\"num\">Price (\u20b9)<\/th><th data-sort=\"value\" class=\"num\">Stock value<\/th><th data-sort=\"status\">Status<\/th><th class=\"act\">Actions<\/th><\/tr><\/thead>\n   <tbody><\/tbody>\n  <\/table><\/div>\n <\/section>\n\n <section class=\"panel sr\" id=\"ordersSheet\">\n  <div class=\"panel-head\"><h2>\ud83e\uddfe Orders <span class=\"muted\" id=\"orderCount\"><\/span><\/h2>\n   <div class=\"sheet-actions\"><button class=\"smallbtn\" data-export=\"orders-csv\">Export CSV<\/button><button class=\"smallbtn\" data-export=\"orders-json\">Export JSON<\/button><\/div><\/div>\n  <div class=\"table-wrap\"><table class=\"sheet\" id=\"orderTable\">\n   <thead><tr><th>Order<\/th><th>Date<\/th><th>Student name<\/th><th>Student ID / roll no.<\/th><th>Phone number<\/th><th>Pickup / collection time<\/th><th>Items<\/th><th class=\"num\">Total<\/th><th>Update status<\/th><th>Payment<\/th><th>Reference<\/th><th>Screenshot<\/th><\/tr><\/thead>\n   <tbody><\/tbody>\n  <\/table><\/div>\n <\/section>\n\n <section class=\"panel sr cart-panel\" id=\"cartSheet\">\n  <div class=\"panel-head\"><h2>\ud83d\uded2 Pre-order cart<\/h2><span class=\"muted\" id=\"cartTotal\"><\/span><\/div>\n  <div class=\"table-wrap\"><table class=\"sheet dark\" id=\"cartTable\">\n   <thead><tr><th>Item name<\/th><th>Category<\/th><th class=\"num\">Qty<\/th><th class=\"num\">Price (\u20b9)<\/th><th class=\"num\">Line total<\/th><\/tr><\/thead>\n   <tbody><\/tbody>\n  <\/table><\/div>\n <\/section>\n\n <section class=\"panel sr\" id=\"settingsSheet\">\n  <div class=\"panel-head\"><h2>\u2699\ufe0f Settings<\/h2><span class=\"muted\">Security, auto-lock, appearance and data<\/span><\/div>\n  <div class=\"set-grid\">\n   <div class=\"set-card set-pw\">\n    <div class=\"set-ico\">\ud83d\udd11<\/div><h3>Change password<\/h3><p class=\"muted\">Enter your current password, then choose a new one. You stay signed in after changing it.<\/p>\n    <form id=\"pwForm\" novalidate autocomplete=\"off\">\n     <div class=\"lock-field\"><label for=\"spCur\">Current password<\/label><div class=\"pw\"><input id=\"spCur\" type=\"password\" autocomplete=\"current-password\"><button type=\"button\" class=\"eye\">Show<\/button><\/div><\/div>\n     <div class=\"lock-field\"><label for=\"spNew\">New password<\/label><div class=\"pw\"><input id=\"spNew\" type=\"password\" autocomplete=\"new-password\"><button type=\"button\" class=\"eye\">Show<\/button><\/div><div class=\"meter on\" id=\"spMeter\"><i><\/i><i><\/i><i><\/i><i><\/i><\/div><\/div>\n     <div class=\"lock-field\"><label for=\"spCf\">Confirm new password<\/label><div class=\"pw\"><input id=\"spCf\" type=\"password\" autocomplete=\"new-password\"><button type=\"button\" class=\"eye\">Show<\/button><\/div><\/div>\n     <p class=\"lock-err\" id=\"spErr\" role=\"alert\"><\/p>\n     <button class=\"primary big\" type=\"submit\" id=\"spSave\">Update password<\/button>\n     <p class=\"set-meta\" id=\"pwMeta\"><\/p>\n    <\/form>\n   <\/div>\n   <div class=\"set-col\">\n    <div class=\"set-card\"><div class=\"set-ico\">\u23f1\ufe0f<\/div><h3>Auto-lock<\/h3><p class=\"muted\">Lock the admin page when nobody uses it for:<\/p>\n     <div class=\"seg wrap-seg\" id=\"idleSeg\"><button type=\"button\" data-v=\"5\">5 min<\/button><button type=\"button\" data-v=\"15\">15 min<\/button><button type=\"button\" data-v=\"30\">30 min<\/button><button type=\"button\" data-v=\"60\">1 hour<\/button><button type=\"button\" data-v=\"0\">Never<\/button><\/div>\n     <button type=\"button\" class=\"ghost set-btn\" id=\"setLockNow\">\ud83d\udd12 Lock now<\/button><\/div>\n    <div class=\"set-card\"><div class=\"set-ico\">\ud83c\udfa8<\/div><h3>Appearance<\/h3><p class=\"muted\">Applies to the store and the admin page.<\/p>\n     <div class=\"seg\" id=\"themeSeg\"><button type=\"button\" data-v=\"color\">\ud83c\udfa8 Colour<\/button><button type=\"button\" data-v=\"bw\">\u2b1b Black &amp; White<\/button><\/div><\/div>\n    <div class=\"set-card\"><div class=\"set-ico\">\ud83d\udcbe<\/div><h3>Data and storage<\/h3><p class=\"muted\">Screenshots are compressed before saving. Browser storage is limited (about 5 MB).<\/p>\n     <div class=\"store-meter\"><div class=\"sm-track\"><i id=\"smFill\"><\/i><\/div><small id=\"smTxt\"><\/small><\/div>\n     <div class=\"set-actions\"><button type=\"button\" class=\"ghost set-btn\" id=\"backupBtn\">Download backup<\/button><button type=\"button\" class=\"ghost set-btn\" id=\"clearShots\">Remove saved screenshots<\/button><\/div><\/div>\n   <\/div>\n  <\/div>\n <\/section>\n\n <div class=\"note sr\"><b>College project demo:<\/b> Orders, payment references and screenshots are saved only in this browser, so this page shows orders placed on this device. UPI payments are not automatically verified.<\/div>\n <div class=\"footer\"><div class=\"big sr\">Datasheet<\/div><span>CampusHub \u00b7 College availability and pre-order prototype<\/span><a class=\"link\" href=\"#store\" data-go=\"store\">\u2190 Back to the store<\/a><\/div>\n<\/div>\n<\/div>\n<div class=\"lightbox\" id=\"lightbox\" role=\"dialog\" aria-modal=\"true\" aria-labelledby=\"lbTitle\">\n <div class=\"lb-card\">\n  <div class=\"lb-head\"><div><div class=\"hero-kicker\">Payment screenshot<\/div><h3 id=\"lbTitle\">Order<\/h3><p class=\"muted\" id=\"lbMeta\"><\/p><\/div><button class=\"icon-btn\" id=\"lbClose\" aria-label=\"Close\">\u2715<\/button><\/div>\n  <div class=\"lb-stage\" id=\"lbStage\"><button class=\"lb-nav prev\" id=\"lbPrev\" aria-label=\"Previous screenshot\">\u2039<\/button><img id=\"lbImg\" alt=\"Payment screenshot\"><button class=\"lb-nav next\" id=\"lbNext\" aria-label=\"Next screenshot\">\u203a<\/button><span class=\"lb-hint\">Click image to zoom<\/span><\/div>\n  <div class=\"lb-foot\"><div class=\"lb-pay\"><small>Payment<\/small><span class=\"badge\" id=\"lbPay\"><\/span><small id=\"lbRef\"><\/small><\/div><div class=\"lb-actions\"><button class=\"ghost\" id=\"lbDl\">Download<\/button><button class=\"ghost danger-ghost\" id=\"lbReject\">Reject<\/button><button class=\"primary\" id=\"lbOk\">\u2713 Mark verified<\/button><\/div><\/div>\n <\/div>\n<\/div>\n<div class=\"overlay\" id=\"overlay\"><\/div>\n<aside class=\"drawer\" id=\"drawer\" aria-hidden=\"true\" aria-labelledby=\"drawerTitle\" role=\"dialog\">\n <div class=\"drawer-head\"><div><div class=\"hero-kicker\" id=\"drawerKicker\">New stock<\/div><h2 id=\"drawerTitle\">Add item<\/h2><\/div><button class=\"icon-btn\" id=\"drawerClose\" aria-label=\"Close\">\u2715<\/button><\/div>\n <p class=\"muted\">Add an item or update an existing item by entering the same name and category. Set quantity to 0 when out of stock.<\/p>\n <form id=\"addForm\" novalidate>\n  <div class=\"f\"><label for=\"name\">Item name<\/label><input id=\"name\" required placeholder=\"e.g. Veg sandwich\"><small class=\"err\"><\/small><\/div>\n  <div class=\"f\"><label>Category<\/label><div class=\"seg\" id=\"catSeg\"><button type=\"button\" data-v=\"Food\" class=\"on\">\ud83c\udf54 Food<\/button><button type=\"button\" data-v=\"Books\">\ud83d\udcda Books<\/button><button type=\"button\" data-v=\"Stationery\">\u270f\ufe0f Stationery<\/button><\/div><input type=\"hidden\" id=\"category\" value=\"Food\"><\/div>\n  <div class=\"f two\"><div><label for=\"quantity\">Quantity in stock<\/label><div class=\"num-in\"><button type=\"button\" data-step=\"quantity\" data-d=\"-1\">\u2212<\/button><input id=\"quantity\" type=\"number\" min=\"0\" value=\"10\" required><button type=\"button\" data-step=\"quantity\" data-d=\"1\">+<\/button><\/div><small class=\"err\"><\/small><\/div>\n  <div><label for=\"price\">Price (\u20b9)<\/label><div class=\"num-in\"><button type=\"button\" data-step=\"price\" data-d=\"-5\">\u2212<\/button><input id=\"price\" type=\"number\" min=\"0\" value=\"20\" required><button type=\"button\" data-step=\"price\" data-d=\"5\">+<\/button><\/div><small class=\"err\"><\/small><\/div><\/div>\n  <div class=\"f\"><label for=\"location\">Location<\/label><input id=\"location\" required placeholder=\"Main canteen / Shelf B2\" list=\"locList\"><datalist id=\"locList\"><\/datalist><small class=\"err\"><\/small><\/div>\n  <div class=\"f\"><label for=\"detail\">Details<\/label><input id=\"detail\" placeholder=\"Author, flavour, pages\u2026\"><\/div>\n  <div class=\"preview-card\" id=\"pv\"><\/div>\n  <div class=\"drawer-foot\"><button type=\"button\" class=\"ghost\" id=\"cancelDrawer\">Cancel<\/button><button class=\"primary big\" type=\"submit\" id=\"saveBtn\">Save item / update stock<\/button><\/div>\n <\/form>\n<\/aside>\n<div class=\"dialog\" id=\"dialog\" role=\"alertdialog\" aria-modal=\"true\"><div class=\"dialog-card\"><div class=\"dialog-icon\">\u26a0\ufe0f<\/div><h3 id=\"dlgMsg\"><\/h3><div class=\"dialog-actions\"><button class=\"ghost\" id=\"dlgNo\">Cancel<\/button><button class=\"primary danger\" id=\"dlgYes\">Confirm<\/button><\/div><\/div><\/div>\n<div class=\"toast-wrap\" id=\"toasts\" aria-live=\"polite\"><\/div>\n\n<script>\nconst STORE=parent.CHSTORE;\nconst seed=[\n{id:1,name:\"Vegetable sandwich\",category:\"Food\",quantity:8,price:35,location:\"Main canteen\",detail:\"Freshly prepared\",emoji:\"\ud83e\udd6a\"},\n{id:2,name:\"Samosa\",category:\"Food\",quantity:3,price:15,location:\"Main canteen\",detail:\"Tea counter snack\",emoji:\"\ud83e\udd5f\"},\n{id:3,name:\"Lemon juice\",category:\"Food\",quantity:0,price:20,location:\"Juice counter\",detail:\"Cold drink\",emoji:\"\ud83e\udd64\"},\n{id:4,name:\"Bread pocket\",category:\"Food\",quantity:12,price:15,location:\"Main canteen\",detail:\"Breakfast and lunch\",emoji:\"\ud83e\udd5e\"},\n{id:5,name:\"Data Structures in C\",category:\"Books\",quantity:2,price:0,location:\"Library \u00b7 Shelf B2\",detail:\"Author: Reema Thareja\",emoji:\"\ud83d\udcd8\"},\n{id:6,name:\"Introduction to Algorithms\",category:\"Books\",quantity:0,price:0,location:\"Library \u00b7 Shelf C1\",detail:\"Author: Cormen et al.\",emoji:\"\ud83d\udcd5\"},\n{id:7,name:\"Let Us C\",category:\"Books\",quantity:4,price:0,location:\"Library \u00b7 Shelf B1\",detail:\"Author: Yashavant Kanetkar\",emoji:\"\ud83d\udcd7\"},\n{id:8,name:\"A4 notebook\",category:\"Stationery\",quantity:14,price:45,location:\"Campus stationery shop\",detail:\"200 pages\",emoji:\"\ud83d\udcd3\"},\n{id:9,name:\"Blue ball pen\",category:\"Stationery\",quantity:2,price:10,location:\"Campus stationery shop\",detail:\"Blue ink\",emoji:\"\ud83d\udd8a\ufe0f\"},\n{id:10,name:\"Record file\",category:\"Stationery\",quantity:0,price:35,location:\"Campus stationery shop\",detail:\"A4 size\",emoji:\"\ud83d\udcc1\"}];\nconst $=id=>document.getElementById(id);\nconst reduce=matchMedia(\"(prefers-reduced-motion: reduce)\").matches;\nfunction load(key,fallback){try{return JSON.parse(STORE.getItem(key))??fallback}catch(e){return fallback}}\nfunction esc(v){return String(v??\"\").replace(/[&<>\"']/g,c=>({\"&\":\"&amp;\",\"<\":\"&lt;\",\">\":\"&gt;\",'\"':\"&quot;\",\"'\":\"&#39;\"})[c])}\nfunction status(item){if(item.quantity===0)return\"Out of Stock\";if(item.quantity<=3)return\"Low Stock\";return\"Available\"}\nfunction css(st){return st===\"Available\"?\"available\":st===\"Low Stock\"?\"low\":\"out\"}\nfunction toast(msg){const w=$(\"toasts\"),t=document.createElement(\"div\");t.className=\"toast\";t.textContent=msg;w.appendChild(t);setTimeout(()=>{t.classList.add(\"out\");setTimeout(()=>t.remove(),400)},2600)}\nlet items,cart,orders,cat=\"All\",sortKey=\"\",sortDir=1,first=true,flash=null;\nconst emoji={Food:\"\ud83c\udf74\",Books:\"\ud83d\udcda\",Stationery:\"\u270f\ufe0f\"};\nfunction save(){try{STORE.setItem(\"campusfind-preorder-items\",JSON.stringify(items));STORE.setItem(\"campusfind-preorder-cart\",JSON.stringify(cart));STORE.setItem(\"campusfind-preorder-orders\",JSON.stringify(orders))}catch(e){console.warn(\"Storage unavailable\",e)}}\nfunction read(){items=load(\"campusfind-preorder-items\",seed);cart=load(\"campusfind-preorder-cart\",[]);orders=load(\"campusfind-preorder-orders\",[])}\n\nfunction countUp(el,to,prefix=\"\"){if(reduce||!first){el.textContent=prefix+to.toLocaleString(\"en-IN\");return}const t0=performance.now(),d=1200;(function f(t){const p=Math.min(1,(t-t0)/d),e=1-Math.pow(1-p,4);el.textContent=prefix+Math.round(to*e).toLocaleString(\"en-IN\");if(p<1)requestAnimationFrame(f)})(t0)}\nfunction renderKpis(){const v={items:items.length,units:items.reduce((s,i)=>s+i.quantity,0),available:items.filter(i=>status(i)===\"Available\").length,low:items.filter(i=>status(i)===\"Low Stock\").length,out:items.filter(i=>status(i)===\"Out of Stock\").length,orders:orders.length,revenue:orders.reduce((s,o)=>s+Number(o.total||0),0),cart:cart.reduce((s,l)=>s+l.qty,0),stockValue:items.reduce((s,i)=>s+i.quantity*i.price,0)};document.querySelectorAll(\"[data-count]\").forEach(el=>countUp(el,v[el.dataset.count],el.dataset.prefix||\"\"))}\nfunction renderBars(){const cats=[\"Food\",\"Books\",\"Stationery\"],em={Food:\"\ud83c\udf54\",Books:\"\ud83d\udcda\",Stationery:\"\u270f\ufe0f\"},lbl={Food:\"Food\",Books:\"Library books\",Stationery:\"Stationery\"};const units=cats.map(c=>items.filter(i=>i.category===c).reduce((s,i)=>s+i.quantity,0)),max=Math.max(1,...units);$(\"bars\").innerHTML=cats.map((c,k)=>{const list=items.filter(i=>i.category===c),a=list.filter(i=>status(i)===\"Available\").length,l=list.filter(i=>status(i)===\"Low Stock\").length,o=list.filter(i=>status(i)===\"Out of Stock\").length,n=Math.max(1,list.length);return `<div class=\"bar-row\"><div class=\"bar-label\"><span class=\"emoji sm\">${em[c]}<\/span><b>${lbl[c]}<\/b><span class=\"muted\">${list.length} items<\/span><\/div><div class=\"bar-track\"><div class=\"bar-fill\" style=\"--w:${units[k]/max*100}%;--d:${k*120}ms\"><span>${units[k]} units<\/span><\/div><\/div><div class=\"stack\" title=\"Available / Low Stock / Out of Stock\"><i class=\"available\" style=\"flex:${a}\"><\/i><i class=\"low\" style=\"flex:${l}\"><\/i><i class=\"out\" style=\"flex:${o}\"><\/i><\/div><div class=\"stack-legend\"><span class=\"badge available\">${a}<\/span><span class=\"badge low\">${l}<\/span><span class=\"badge out\">${o}<\/span><\/div><\/div>`}).join(\"\");requestAnimationFrame(()=>requestAnimationFrame(()=>$(\"bars\").classList.add(\"go\")))}\nfunction renderItems(){const q=$(\"q\").value.toLowerCase().trim(),f=$(\"status\").value;let rows=items.map(i=>({...i,value:i.quantity*i.price,status:status(i)})).filter(i=>(cat===\"All\"||i.category===cat)&&(f===\"All stock\"||i.status===f)&&[i.name,i.category,i.location,i.detail].join(\" \").toLowerCase().includes(q));if(sortKey)rows.sort((a,b)=>{const x=a[sortKey],y=b[sortKey];return(typeof x===\"number\"?x-y:String(x).localeCompare(String(y)))*sortDir});$(\"itemCount\").textContent=\"(\"+rows.length+\")\";document.querySelectorAll(\"#itemTable th\").forEach(th=>{th.classList.toggle(\"sorted\",th.dataset.sort===sortKey);th.dataset.dir=th.dataset.sort===sortKey?(sortDir>0?\"\u2191\":\"\u2193\"):\"\"});$(\"itemTable\").tBodies[0].innerHTML=rows.length?rows.map((i,k)=>`<tr style=\"--i:${k}\" data-row=\"${i.id}\" class=\"${flash==i.id?\"flash\":\"\"}\"><td class=\"mono\">${esc(String(i.id).slice(-6))}<\/td><td><span class=\"cell-name\"><span class=\"emoji sm\">${esc(i.emoji||\"\ud83d\udce6\")}<\/span>${esc(i.name)}<\/span><\/td><td>${esc(i.category)}<\/td><td>\ud83d\udccd ${esc(i.location)}<\/td><td class=\"muted\">${esc(i.detail||\"\u2014\")}<\/td><td class=\"num\"><span class=\"stepper\"><button data-q=\"${i.id}\" data-d=\"-1\" aria-label=\"Decrease\" ${i.quantity===0?\"disabled\":\"\"}>\u2212<\/button><b>${i.quantity}<\/b><button data-q=\"${i.id}\" data-d=\"1\" aria-label=\"Increase\">+<\/button><\/span><\/td><td class=\"num\">${i.category===\"Books\"&&Number(i.price)===0?\"Library copy\":\"\u20b9\"+i.price}<\/td><td class=\"num\">\u20b9${i.value}<\/td><td><span class=\"badge ${css(i.status)}\">${i.status}<\/span><\/td><td class=\"act\"><button class=\"smallbtn\" data-edit=\"${i.id}\">Edit<\/button><button class=\"smallbtn del\" data-del=\"${i.id}\">Delete<\/button><\/td><\/tr>`).join(\"\"):`<tr><td colspan=\"10\"><div class=\"empty\">No items found. Try a different search or category.<\/div><\/td><\/tr>`}\nfunction renderOrders(){$(\"orderCount\").textContent=\"(\"+orders.length+\")\";$(\"orderTable\").tBodies[0].innerHTML=orders.length?orders.map((o,k)=>`<tr style=\"--i:${k}\"><td class=\"mono\"><b>${esc(o.id)}<\/b><\/td><td class=\"nowrap\">${esc(o.date)}<\/td><td>${esc(o.student)}<\/td><td>${esc(o.roll)}<\/td><td><a class=\"phone-link\" href=\"tel:${esc(o.phone||\"\")}\">${esc(o.phone||\"Not provided\")}<\/a><\/td><td>${esc(o.pickup)}<\/td><td class=\"wrap\">${(o.lines||[]).map(l=>esc(l.name)+\" \u00d7 \"+l.qty).join(\", \")}<\/td><td class=\"num\">\u20b9${o.total}<\/td><td><select class=\"status-sel ${/Cancel/.test(o.status)?\"out\":/Collected|Ready/.test(o.status)?\"available\":\"low\"}\" data-status=\"${esc(o.id)}\">${([\"Pending\",\"Preparing\",\"Ready for pickup\",\"Collected\",\"Cancelled\"].includes(o.status)?[]:[o.status]).concat([\"Pending\",\"Preparing\",\"Ready for pickup\",\"Collected\",\"Cancelled\"]).map(st=>`<option ${o.status===st?\"selected\":\"\"}>${esc(st)}<\/option>`).join(\"\")}<\/select><\/td><td><span class=\"badge ${/Verified/.test(o.paymentStatus)?\"available\":/Reject/.test(o.paymentStatus)?\"out\":\"low\"}\">${esc(o.paymentStatus||\"Not recorded\")}<\/span><\/td><td>${esc(o.paymentRef||\"Not provided\")}<\/td><td>${o.screenshot?`<button class=\"shot-thumb\" data-shot=\"${esc(o.id)}\" aria-label=\"View payment screenshot for ${esc(o.id)}\"><img src=\"${o.screenshot}\" alt=\"\"><span>View<\/span><\/button>`:o.screenshotSelected?'<span class=\"muted\">Selected \u00b7 not saved<\/span>':'<span class=\"muted\">None<\/span>'}<\/td><\/tr>`).join(\"\"):`<tr><td colspan=\"12\"><div class=\"empty\">No orders placed yet.<\/div><\/td><\/tr>`}\nfunction renderCart(){const rows=cart.map(l=>({l,i:items.find(x=>x.id===l.id)})).filter(r=>r.i);const tot=rows.reduce((s,r)=>s+r.i.price*r.l.qty,0);$(\"cartTotal\").textContent=rows.length?\"Total \u20b9\"+tot:\"\";$(\"cartTable\").tBodies[0].innerHTML=rows.length?rows.map((r,k)=>`<tr style=\"--i:${k}\"><td>${esc(r.i.name)}<\/td><td>${esc(r.i.category)}<\/td><td class=\"num\">${r.l.qty}<\/td><td class=\"num\">\u20b9${r.i.price}<\/td><td class=\"num\">\u20b9${r.i.price*r.l.qty}<\/td><\/tr>`).join(\"\"):`<tr><td colspan=\"5\"><div class=\"empty dark\">Your cart is empty. Add an available item above.<\/div><\/td><\/tr>`}\nfunction renderAll(keep){if(!keep)read();renderAlerts();renderKpis();renderBars();renderItems();renderOrders();renderCart();$(\"updated\").textContent=\"Updated \"+new Date().toLocaleTimeString();first=false}\n\n// controls\ndocument.querySelectorAll(\"#itemTable th[data-sort]\").forEach(th=>th.onclick=()=>{const k=th.dataset.sort;if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=1}renderItems()});\ndocument.querySelectorAll(\"[data-cat]\").forEach(b=>b.onclick=()=>{cat=b.dataset.cat;document.querySelectorAll(\"[data-cat]\").forEach(x=>x.classList.toggle(\"active\",x===b));moveInk();renderItems()});\n$(\"q\").oninput=renderItems;$(\"status\").onchange=renderItems;\nfunction download(name,text,type){const a=document.createElement(\"a\");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast(\"Downloaded \"+name)}\nfunction toCSV(rows){if(!rows.length)return\"\";const keys=Object.keys(rows[0]);return[keys.join(\",\"),...rows.map(r=>keys.map(k=>'\"'+String(r[k]??\"\").replace(/\"/g,'\"\"')+'\"').join(\",\"))].join(\"\\n\")}\ndocument.querySelectorAll(\"[data-export]\").forEach(b=>b.onclick=()=>{const [what,fmt]=b.dataset.export.split(\"-\");const data=what===\"items\"?items.map(i=>({id:i.id,name:i.name,category:i.category,location:i.location,detail:i.detail,quantity:i.quantity,price:i.price,status:status(i)})):orders.map(o=>({id:o.id,date:o.date,student:o.student,roll:o.roll,phone:o.phone,pickup:o.pickup,items:(o.lines||[]).map(l=>l.name+\" x \"+l.qty).join(\"; \"),total:o.total,status:o.status,payment:o.paymentStatus,reference:o.paymentRef,screenshot:o.screenshotSelected?\"Yes\":\"No\"}));if(!data.length)return toast(what===\"orders\"?\"No orders placed yet.\":\"No items found.\");fmt===\"csv\"?download(\"campushub-\"+what+\".csv\",toCSV(data),\"text/csv\"):download(\"campushub-\"+what+\".json\",JSON.stringify(data,null,2),\"application/json\")});\naddEventListener(\"storage\",e=>{if(e.key&&e.key.startsWith(\"campusfind\"))renderAll()});\n\n// shared ui\n$(\"settingsBtn\").onclick=e=>{e.stopPropagation();$(\"settingsPanel\").classList.toggle(\"closed\")};document.addEventListener(\"click\",e=>{if(!e.target.closest(\".header-actions\"))$(\"settingsPanel\").classList.add(\"closed\")});\n$(\"bwBtn\").onclick=()=>{document.body.classList.add(\"theme-bw\");STORE.setItem(\"campusfind-theme\",\"bw\")};$(\"colorBtn\").onclick=()=>{document.body.classList.remove(\"theme-bw\");STORE.setItem(\"campusfind-theme\",\"color\")};if(STORE.getItem(\"campusfind-theme\")===\"bw\")document.body.classList.add(\"theme-bw\");\nfunction moveInk(){const a=document.querySelector(\".tab.active\"),ink=$(\"tabInk\");if(!a)return;ink.style.width=a.offsetWidth+\"px\";ink.style.transform=`translateX(${a.offsetLeft}px)`}\naddEventListener(\"resize\",moveInk);document.fonts&&document.fonts.ready.then(moveInk);setTimeout(moveInk,50);\nconst hdr=$(\"topbar\"),prog=$(\"progress\");function onScroll(){const y=scrollY,h=document.documentElement.scrollHeight-innerHeight;hdr.classList.toggle(\"scrolled\",y>10);prog.style.transform=`scaleX(${h>0?y/h:0})`}addEventListener(\"scroll\",onScroll,{passive:true});onScroll();\nif(\"IntersectionObserver\"in window){const io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){en.target.classList.add(\"in\");io.unobserve(en.target)}}),{threshold:.08,rootMargin:\"0px 0px -30px 0px\"});document.querySelectorAll(\".sr\").forEach(el=>io.observe(el))}else document.querySelectorAll(\".sr\").forEach(el=>el.classList.add(\"in\"));\n// ===== Admin: stock management =====\nfunction commit(id,msg){save();flash=id;renderAll(true);flash=null;if(msg)toast(msg)}\nfunction renderAlerts(){const list=items.filter(i=>i.quantity<=3).sort((a,b)=>a.quantity-b.quantity);$(\"alerts\").innerHTML=list.length?`<div class=\"alerts-head\"><b>Needs attention<\/b><span class=\"muted\">${list.length} items are Low Stock or Out of Stock<\/span><\/div><div class=\"alert-list\">${list.map(i=>`<div class=\"alert-chip ${css(status(i))}\"><span class=\"emoji sm\">${esc(i.emoji||emoji[i.category])}<\/span><div><b>${esc(i.name)}<\/b><small>${status(i)} \u00b7 ${i.quantity} left<\/small><\/div><button class=\"smallbtn\" data-restock=\"${i.id}\">+10<\/button><\/div>`).join(\"\")}<\/div>`:`<div class=\"alerts-head ok\"><b>All stocked up<\/b><span class=\"muted\">No items are Low Stock or Out of Stock.<\/span><\/div>`}\ndocument.addEventListener(\"click\",e=>{\n const q=e.target.closest(\"[data-q]\");if(q){const it=items.find(x=>x.id==q.dataset.q);if(!it)return;it.quantity=Math.max(0,it.quantity+Number(q.dataset.d));commit(it.id);return}\n const rs=e.target.closest(\"[data-restock]\");if(rs){const it=items.find(x=>x.id==rs.dataset.restock);it.quantity+=10;commit(it.id,\"Restocked \"+it.name+\" \u00b7 \"+it.quantity+\" in stock\");return}\n const ed=e.target.closest(\"[data-edit]\");if(ed){openDrawer(items.find(x=>x.id==ed.dataset.edit));return}\n const dl=e.target.closest(\"[data-del]\");if(dl){const it=items.find(x=>x.id==dl.dataset.del);ask(\"Delete \"+it.name+\"?\").then(ok=>{if(!ok)return;const row=document.querySelector(`[data-row=\"${it.id}\"]`);const go=()=>{items=items.filter(x=>x.id!==it.id);cart=cart.filter(x=>x.id!==it.id);commit(null,\"Item deleted.\")};if(row&&!reduce){row.classList.add(\"leaving\");setTimeout(go,380)}else go()});return}\n if(e.target.closest(\"[data-open-add]\")){openDrawer(null);return}\n});\ndocument.addEventListener(\"change\",e=>{const sel=e.target.closest(\"[data-status]\");if(!sel)return;const o=orders.find(x=>x.id===sel.dataset.status);if(o){o.status=sel.value;save();renderAll(true);toast(\"Order \"+o.id+\" \u00b7 \"+o.status)}});\n$(\"reset\").onclick=()=>ask(\"Reset sample items and clear demo orders?\").then(ok=>{if(ok){items=JSON.parse(JSON.stringify(seed));cart=[];orders=[];first=true;commit(null,\"Sample data restored.\")}});\n// confirm dialog\nfunction ask(msg){return new Promise(res=>{$(\"dlgMsg\").textContent=msg;const d=$(\"dialog\");d.classList.add(\"open\");const done=v=>{d.classList.remove(\"open\");$(\"dlgYes\").onclick=$(\"dlgNo\").onclick=null;res(v)};$(\"dlgYes\").onclick=()=>done(true);$(\"dlgNo\").onclick=()=>done(false);d.onclick=e=>{if(e.target===d)done(false)};setTimeout(()=>$(\"dlgYes\").focus(),50)})}\n// drawer\nconst F=[\"name\",\"quantity\",\"price\",\"location\",\"detail\"];let editId=null;\nfunction setCat(v){$(\"category\").value=v;document.querySelectorAll(\"#catSeg button\").forEach(b=>b.classList.toggle(\"on\",b.dataset.v===v));preview()}\ndocument.querySelectorAll(\"#catSeg button\").forEach(b=>b.onclick=()=>setCat(b.dataset.v));\ndocument.querySelectorAll(\"[data-step]\").forEach(b=>b.onclick=()=>{const inp=$(b.dataset.step);inp.value=Math.max(0,(Number(inp.value)||0)+Number(b.dataset.d));preview()});\nfunction openDrawer(it){editId=it?it.id:null;$(\"addForm\").reset();document.querySelectorAll(\"#addForm .f\").forEach(f=>f.classList.remove(\"bad\"));$(\"drawerTitle\").textContent=it?\"Edit item\":\"Add item\";$(\"drawerKicker\").textContent=it?\"Update stock\":\"New stock\";$(\"name\").value=it?it.name:\"\";$(\"quantity\").value=it?it.quantity:10;$(\"price\").value=it?it.price:20;$(\"location\").value=it?it.location:\"\";$(\"detail\").value=it?(it.detail||\"\"):\"\";setCat(it?it.category:(cat===\"All\"?\"Food\":cat));$(\"locList\").innerHTML=[...new Set(items.map(i=>i.location))].map(l=>`<option value=\"${esc(l)}\">`).join(\"\");document.body.classList.add(\"drawer-open\");$(\"drawer\").setAttribute(\"aria-hidden\",\"false\");setTimeout(()=>$(\"name\").focus(),350)}\nfunction closeDrawer(){document.body.classList.remove(\"drawer-open\");$(\"drawer\").setAttribute(\"aria-hidden\",\"true\")}\n$(\"drawerClose\").onclick=closeDrawer;$(\"cancelDrawer\").onclick=closeDrawer;$(\"overlay\").onclick=closeDrawer;\naddEventListener(\"keydown\",e=>{if(e.key===\"Escape\"){if($(\"dialog\").classList.contains(\"open\"))$(\"dlgNo\").click();else closeDrawer()}});\nfunction preview(){const n=$(\"name\").value.trim()||\"Item name\",c=$(\"category\").value,q=Number($(\"quantity\").value)||0,p=Number($(\"price\").value)||0,st=status({quantity:q});$(\"pv\").innerHTML=`<small class=\"muted\">Preview on the customer page<\/small><div class=\"pv-card\"><div class=\"top\"><span class=\"emoji\">${emoji[c]}<\/span><span class=\"badge ${css(st)}\">${st}<\/span><\/div><h3>${esc(n)}<\/h3><div class=\"muted\">${esc($(\"detail\").value.trim()||c)}<\/div><div class=\"muted\">\ud83d\udccd ${esc($(\"location\").value.trim()||\"Location\")}<br>Quantity: ${q}<\/div><div class=\"card-bottom\"><span class=\"price\">${c===\"Books\"&&p===0?\"Library copy\":\"\u20b9\"+p}<\/span><span class=\"order\">${c===\"Books\"?\"Reserve book\":\"Pre-order\"}<\/span><\/div><\/div>`}\nF.forEach(id=>$(id).addEventListener(\"input\",()=>{$(id).closest(\".f\")?.classList.remove(\"bad\");preview()}));\nfunction bad(id,msg){const f=$(id).closest(\".f\")||$(id).closest(\"div\");f.classList.add(\"bad\");const er=f.querySelector(\".err\");if(er)er.textContent=msg;return false}\n$(\"addForm\").onsubmit=e=>{e.preventDefault();document.querySelectorAll(\"#addForm .f, #addForm .two>div\").forEach(f=>f.classList.remove(\"bad\"));const name=$(\"name\").value.trim(),category=$(\"category\").value,quantity=Number($(\"quantity\").value),price=Number($(\"price\").value),location=$(\"location\").value.trim(),detail=$(\"detail\").value.trim();let ok=true;if(!name)ok=bad(\"name\",\"Please enter an item name.\");if($(\"quantity\").value===\"\"||quantity<0||!Number.isInteger(quantity))ok=bad(\"quantity\",\"Enter 0 or more.\");if($(\"price\").value===\"\"||price<0)ok=bad(\"price\",\"Enter 0 or more.\");if(!location)ok=bad(\"location\",\"Please enter a location.\");if(!ok){$(\"drawer\").classList.remove(\"shake\");void $(\"drawer\").offsetWidth;$(\"drawer\").classList.add(\"shake\");return}\n let existing=editId?items.find(i=>i.id===editId):items.find(i=>i.name.toLowerCase()===name.toLowerCase()&&i.category===category);let id;\n if(existing){Object.assign(existing,{name,category,quantity,price,location,detail,emoji:emoji[category]});id=existing.id}else{id=Date.now();items.unshift({id,name,category,quantity,price,location,detail,emoji:emoji[category]})}\n closeDrawer();commit(id,existing?\"Item updated.\":\"Item added.\");setTimeout(()=>{const row=document.querySelector(`[data-row=\"${id}\"]`);row&&row.scrollIntoView({behavior:reduce?\"auto\":\"smooth\",block:\"center\"})},200)};\n\n(function(){const pc=document.getElementById(\"pageCurtain\");if(!pc)return;\nfunction open(){pc.classList.add(\"anim\",\"above\");setTimeout(()=>document.documentElement.classList.remove(\"arrive\"),20)}\nif(document.documentElement.classList.contains(\"arrive\"))requestAnimationFrame(()=>requestAnimationFrame(open));\ndocument.addEventListener(\"click\",e=>{const a=e.target.closest(\"a.page-link\");if(!a||e.metaKey||e.ctrlKey)return;e.preventDefault();if(reduce){location.href=a.href;return}document.documentElement.classList.remove(\"arrive\");pc.className=\"page-curtain\";void pc.offsetWidth;pc.classList.add(\"anim\",\"cover\");setTimeout(()=>{location.href=a.getAttribute(\"href\")},800)});\naddEventListener(\"pageshow\",e=>{if(e.persisted){pc.className=\"page-curtain above\"}})})();\n\n// ---------- admin password lock ----------\nconst Lock=(()=>{\n // compact SHA-256 (works on file:// and in any browser)\n function sha256(str){const K=[],H=[];let n=2,c=0;const isP=x=>{for(let f=2;f*f<=x;f++)if(x%f===0)return false;return true};while(c<64){if(isP(n)){if(c<8)H[c]=(Math.pow(n,1/2)*4294967296)|0;K[c++]=(Math.pow(n,1/3)*4294967296)|0}n++}\n  const b=unescape(encodeURIComponent(str)),w=[],l=b.length*8;for(let i=0;i<b.length;i++)w[i>>2]|=b.charCodeAt(i)<<((3-i%4)*8);w[l>>5]|=0x80<<(24-l%32);w[((l+64>>9)<<4)+15]=l;\n  const r=(x,y)=>(x>>>y)|(x<<(32-y)),h=H.slice();for(let j=0;j<w.length;j+=16){const W=[],a=h.slice();for(let i=0;i<64;i++){if(i<16)W[i]=w[i+j]|0;else{const s0=r(W[i-15],7)^r(W[i-15],18)^(W[i-15]>>>3),s1=r(W[i-2],17)^r(W[i-2],19)^(W[i-2]>>>10);W[i]=(W[i-16]+s0+W[i-7]+s1)|0}\n   const t1=(a[7]+(r(a[4],6)^r(a[4],11)^r(a[4],25))+((a[4]&a[5])^(~a[4]&a[6]))+K[i]+W[i])|0,t2=((r(a[0],2)^r(a[0],13)^r(a[0],22))+((a[0]&a[1])^(a[0]&a[2])^(a[1]&a[2])))|0;a.pop();a.unshift((t1+t2)|0);a[4]=(a[4]+t1)|0}for(let i=0;i<8;i++)h[i]=(h[i]+a[i])|0}\n  return h.map(x=>(x>>>0).toString(16).padStart(8,\"0\")).join(\"\")}\n const K_AUTH=\"campushub-admin-auth\",K_SESS=\"campushub-admin-session\",K_TRY=\"campushub-admin-tries\",K_IDLE=\"campushub-admin-idle\",MAXTRY=5,COOL=30;\n const idleMin=()=>{const v=STORE.getItem(K_IDLE);return v===null?15:Number(v)};const IDLE_MS=()=>idleMin()>0?idleMin()*60000:3650*864e5;\n const el=$(\"lock\"),card=$(\"lockForm\"),pw=$(\"lpPw\"),cf=$(\"lpCf\"),cur=$(\"lpCur\"),err=$(\"lockErr\"),btn=$(\"lockBtn\");\n let mode=\"unlock\",onOpen=null,timer=null,lastAct=Date.now();\n const auth=()=>{try{return JSON.parse(STORE.getItem(K_AUTH))}catch(e){return null}};\n const hash=(p,salt)=>{let h=salt+\":\"+p;for(let i=0;i<500;i++)h=sha256(h+\":\"+salt);return h};\n const unlocked=()=>{const s=Number(STORE.getItem(K_SESS)||0);return auth()&&s>Date.now()};\n const touch=()=>{lastAct=Date.now();if(unlocked())STORE.setItem(K_SESS,String(Date.now()+IDLE_MS()))};\n const tries=()=>{try{return JSON.parse(STORE.getItem(K_TRY))||{n:0,until:0}}catch(e){return{n:0,until:0}}};\n function strength(p){let s=0;if(p.length>=6)s++;if(p.length>=10)s++;if(/[A-Z]/.test(p)&&/[a-z]/.test(p))s++;if(/\\d/.test(p)&&/[^A-Za-z0-9]/.test(p))s++;else if(/\\d|[^A-Za-z0-9]/.test(p)&&s<4)s+=p.length>=8?1:0;return p?Math.max(1,Math.min(4,s)):0}\n function fail(msg,field){err.textContent=msg;document.querySelectorAll(\".lock-field\").forEach(f=>f.classList.remove(\"bad\"));if(field)field.closest(\".lock-field\").classList.add(\"bad\");card.classList.remove(\"shake\");void card.offsetWidth;card.classList.add(\"shake\");(field||pw).focus();(field||pw).select&&(field||pw).select()}\n function setMode(m){mode=m;el.classList.remove(\"setup\",\"change\");if(m!==\"unlock\")el.classList.add(m);err.textContent=\"\";[pw,cf,cur].forEach(i=>{i.value=\"\";i.type=\"password\"});document.querySelectorAll(\".eye\").forEach(e=>e.textContent=\"Show\");document.querySelectorAll(\".lock-field\").forEach(f=>f.classList.remove(\"bad\"));$(\"meter\").dataset.s=0;\n  const t={unlock:[\"CampusHub \u00b7 Admin\",\"Admin access\",\"Enter the admin password to manage items, stock and orders.\",\"Password\",\"Unlock\"],setup:[\"First-time setup\",\"Create admin password\",\"Set a password for the admin page. Only people who know it can add stock, edit items or update orders.\",\"New password\",\"Create password & unlock\"],change:[\"Security\",\"Change password\",\"Enter your current password, then choose a new one.\",\"New password\",\"Save new password\"]}[m];\n  $(\"lockKicker\").textContent=t[0];$(\"lockTitle\").textContent=t[1];$(\"lockSub\").textContent=t[2];$(\"lpPwLabel\").textContent=t[3];$(\"lockBtnTxt\").textContent=t[4];pw.autocomplete=m===\"unlock\"?\"current-password\":\"new-password\";cooldown()}\n function cooldown(){clearInterval(timer);if(mode!==\"unlock\"){btn.disabled=false;return}const tick=()=>{const left=Math.ceil((tries().until-Date.now())/1000);if(left>0){btn.disabled=true;pw.disabled=true;$(\"lockBtnTxt\").textContent=\"Try again in \"+left+\"s\";err.textContent=\"Too many incorrect attempts.\"}else{clearInterval(timer);btn.disabled=false;pw.disabled=false;$(\"lockBtnTxt\").textContent=\"Unlock\";if(/Too many/.test(err.textContent))err.textContent=\"\"}};tick();if(tries().until>Date.now())timer=setInterval(tick,500)}\n function show(m){setMode(m);el.classList.remove(\"hidden\",\"opening\");if(m!==\"change\")document.body.classList.add(\"admin-locked\");document.body.classList.remove(\"drawer-open\");setTimeout(()=>(m===\"change\"?cur:pw).focus(),120)}\n function hide(){el.classList.add(\"opening\");setTimeout(()=>{el.classList.add(\"hidden\");document.body.classList.remove(\"admin-locked\");const f=onOpen;onOpen=null;f&&f()},reduce?0:520)}\n function start(){STORE.setItem(K_SESS,String(Date.now()+IDLE_MS()));STORE.setItem(K_TRY,JSON.stringify({n:0,until:0}))}\n card.addEventListener(\"submit\",e=>{e.preventDefault();if(btn.disabled)return;const a=auth(),p=pw.value;\n  if(mode===\"unlock\"){if(!p)return fail(\"Enter your password.\",pw);if(hash(p,a.salt)!==a.hash){const t=tries();t.n++;if(t.n>=MAXTRY){t.n=0;t.until=Date.now()+COOL*1000}STORE.setItem(K_TRY,JSON.stringify(t));fail(t.until>Date.now()?\"Too many incorrect attempts.\":\"Incorrect password. \"+(MAXTRY-t.n)+\" attempt\"+(MAXTRY-t.n===1?\"\":\"s\")+\" left.\",pw);cooldown();return}start();hide();return}\n  if(mode===\"change\"&&hash(cur.value,a.salt)!==a.hash)return fail(\"Current password is incorrect.\",cur);\n  if(p.length<4)return fail(\"Use at least 4 characters.\",pw);\n  if(p!==cf.value)return fail(\"Passwords do not match.\",cf);\n  const salt=Math.random().toString(36).slice(2)+Date.now().toString(36);STORE.setItem(K_AUTH,JSON.stringify({salt,hash:hash(p,salt),set:Date.now()}));start();\n  const was=mode;hide();setTimeout(()=>toast(was===\"setup\"?\"Admin password created.\":\"Password changed.\"),reduce?0:560)});\n pw.addEventListener(\"input\",()=>{$(\"meter\").dataset.s=strength(pw.value);err.textContent=\"\";pw.closest(\".lock-field\").classList.remove(\"bad\")});\n [cf,cur].forEach(i=>i.addEventListener(\"input\",()=>{err.textContent=\"\";i.closest(\".lock-field\").classList.remove(\"bad\")}));\n document.querySelectorAll(\".eye\").forEach(b=>b.onclick=()=>{const i=b.previousElementSibling,v=i.type===\"password\";i.type=v?\"text\":\"password\";b.textContent=v?\"Hide\":\"Show\";b.setAttribute(\"aria-label\",v?\"Hide password\":\"Show password\");i.focus()});\n $(\"lockCancel\").onclick=()=>{el.classList.add(\"hidden\")};\n el.addEventListener(\"keydown\",e=>{if(e.key===\"Escape\"&&mode===\"change\"){e.stopPropagation();el.classList.add(\"hidden\")}});\n function lockNow(msg){STORE.setItem(K_SESS,\"0\");onOpen=()=>renderAll();show(\"unlock\");if(msg)setTimeout(()=>toast(msg),300)}\n [\"click\",\"keydown\",\"scroll\",\"pointermove\",\"touchstart\"].forEach(ev=>addEventListener(ev,()=>{if(Date.now()-lastAct>5000)touch()},{passive:true}));\n setInterval(()=>{if(!el.classList.contains(\"hidden\")&&mode!==\"change\")return;if(!unlocked())lockNow(\"Locked after \"+(idleMin()>=60?\"1 hour\":idleMin()+\" minutes\")+\" of inactivity.\")},5000);\n addEventListener(\"storage\",e=>{if(e.key===K_SESS&&!unlocked()&&el.classList.contains(\"hidden\"))lockNow(\"Admin page locked.\")});\n function setPw(p){const salt=Math.random().toString(36).slice(2)+Date.now().toString(36);STORE.setItem(K_AUTH,JSON.stringify({salt,hash:hash(p,salt),set:Date.now()}));start()}\n return{strength,verify:p=>{const a=auth();return!!a&&hash(p,a.salt)===a.hash},setPw,info:()=>auth(),idleMin,setIdle:m=>{STORE.setItem(K_IDLE,String(m));touch()},init(fn){if(unlocked()){el.classList.add(\"hidden\");document.body.classList.remove(\"admin-locked\");fn()}else{onOpen=fn;show(auth()?\"unlock\":\"setup\")}},lock:()=>lockNow(\"Admin page locked.\"),change:()=>show(\"change\"),isOpen:()=>!unlocked()};\n})();\n$(\"lockNowBtn\").onclick=()=>Lock.lock();\n$(\"changePwBtn\").onclick=()=>{$(\"settingsPanel\").classList.add(\"closed\");Lock.change()};\nlet _renderAll=renderAll;renderAll=function(k){if(Lock.isOpen()&&!document.getElementById(\"lock\").classList.contains(\"opening\"))return;_renderAll(k)};\n// ---------- settings section ----------\n(function(){\n const f=$(\"pwForm\"),cur=$(\"spCur\"),nw=$(\"spNew\"),cf=$(\"spCf\"),er=$(\"spErr\");\n function meta(){const a=Lock.info();$(\"pwMeta\").textContent=a&&a.set?\"Password last changed \"+new Date(a.set).toLocaleString():\"\"}\n function bad(msg,i){er.textContent=msg;f.querySelectorAll(\".lock-field\").forEach(x=>x.classList.remove(\"bad\"));i.closest(\".lock-field\").classList.add(\"bad\");f.classList.remove(\"shake\");void f.offsetWidth;f.classList.add(\"shake\");i.focus()}\n f.addEventListener(\"submit\",e=>{e.preventDefault();if(!cur.value)return bad(\"Enter your current password.\",cur);if(!Lock.verify(cur.value))return bad(\"Current password is incorrect.\",cur);if(nw.value.length<4)return bad(\"Use at least 4 characters.\",nw);if(nw.value===cur.value)return bad(\"Choose a password different from the current one.\",nw);if(nw.value!==cf.value)return bad(\"Passwords do not match.\",cf);Lock.setPw(nw.value);f.reset();$(\"spMeter\").dataset.s=0;er.textContent=\"\";f.querySelectorAll(\".pw input\").forEach(i=>i.type=\"password\");f.querySelectorAll(\".eye\").forEach(b=>b.textContent=\"Show\");meta();const btn=$(\"spSave\");btn.classList.add(\"done\");btn.textContent=\"\u2713 Password updated\";setTimeout(()=>{btn.classList.remove(\"done\");btn.textContent=\"Update password\"},2200);toast(\"Password changed.\")});\n nw.addEventListener(\"input\",()=>{$(\"spMeter\").dataset.s=Lock.strength(nw.value)});\n [cur,nw,cf].forEach(i=>i.addEventListener(\"input\",()=>{er.textContent=\"\";i.closest(\".lock-field\").classList.remove(\"bad\")}));\n f.querySelectorAll(\".eye\").forEach(b=>b.onclick=()=>{const i=b.previousElementSibling,v=i.type===\"password\";i.type=v?\"text\":\"password\";b.textContent=v?\"Hide\":\"Show\";i.focus()});\n // auto-lock\n function idleUI(){const m=String(Lock.idleMin());document.querySelectorAll(\"#idleSeg button\").forEach(b=>b.classList.toggle(\"on\",b.dataset.v===m))}\n document.querySelectorAll(\"#idleSeg button\").forEach(b=>b.onclick=()=>{Lock.setIdle(Number(b.dataset.v));idleUI();toast(b.dataset.v===\"0\"?\"Auto-lock turned off.\":\"Auto-lock set to \"+b.textContent+\".\")});\n $(\"setLockNow\").onclick=()=>Lock.lock();\n // theme\n function themeUI(){const bw=document.body.classList.contains(\"theme-bw\");document.querySelectorAll(\"#themeSeg button\").forEach(b=>b.classList.toggle(\"on\",(b.dataset.v===\"bw\")===bw))}\n document.querySelectorAll(\"#themeSeg button\").forEach(b=>b.onclick=()=>{(b.dataset.v===\"bw\"?$(\"bwBtn\"):$(\"colorBtn\")).click();themeUI()});\n $(\"bwBtn\").addEventListener(\"click\",()=>setTimeout(themeUI));$(\"colorBtn\").addEventListener(\"click\",()=>setTimeout(themeUI));\n // storage\n function usage(){let n=0;[\"campusfind-preorder-items\",\"campusfind-preorder-cart\",\"campusfind-preorder-orders\"].forEach(k=>{n+=(STORE.getItem(k)||\"\").length});const kb=n*2/1024,pct=Math.min(100,kb/5120*100),shots=orders.filter(o=>o.screenshot).length;$(\"smFill\").style.width=Math.max(2,pct)+\"%\";$(\"smFill\").className=pct>80?\"hi\":pct>50?\"mid\":\"\";$(\"smTxt\").textContent=(kb<1024?Math.round(kb)+\" KB\":(kb/1024).toFixed(1)+\" MB\")+\" of about 5 MB used \u00b7 \"+shots+\" screenshot\"+(shots===1?\"\":\"s\")+\" saved\";$(\"clearShots\").disabled=!shots}\n $(\"backupBtn\").onclick=()=>download(\"campushub-backup-\"+new Date().toISOString().slice(0,10)+\".json\",JSON.stringify({exported:new Date().toISOString(),items,orders,cart},null,2),\"application/json\");\n $(\"clearShots\").onclick=()=>ask(\"Remove all saved payment screenshots? Orders are kept.\").then(ok=>{if(!ok)return;orders.forEach(o=>{if(o.screenshot){delete o.screenshot;o.screenshotSelected=true}});commit(null,\"Screenshots removed.\")});\n // gear menu shortcuts\n const toSettings=focus=>{$(\"settingsPanel\").classList.add(\"closed\");$(\"settingsSheet\").scrollIntoView({behavior:reduce?\"auto\":\"smooth\",block:\"start\"});if(focus)setTimeout(()=>cur.focus({preventScroll:true}),reduce?0:650)};\n $(\"changePwBtn\").onclick=()=>toSettings(true);$(\"allSetBtn\").onclick=()=>toSettings(false);\n // payment screenshot viewer\n const lb=$(\"lightbox\");let at=-1;const list=()=>orders.filter(o=>o.screenshot);\n function show(id){const L=list();at=L.findIndex(o=>o.id===id);if(at<0)return;paint();lb.classList.add(\"open\");document.body.classList.add(\"lb-open\");setTimeout(()=>$(\"lbClose\").focus(),60)}\n function paint(){const L=list(),o=L[at];if(!o)return close();$(\"lbImg\").src=o.screenshot;$(\"lbImg\").classList.remove(\"zoom\");$(\"lbStage\").classList.remove(\"zoomed\");$(\"lbTitle\").textContent=\"Order \"+o.id+\" \u00b7 \u20b9\"+o.total;$(\"lbMeta\").textContent=o.student+\" (\"+o.roll+\") \u00b7 \"+o.date;const p=$(\"lbPay\");p.textContent=o.paymentStatus||\"Not recorded\";p.className=\"badge \"+(/Verified/.test(o.paymentStatus)?\"available\":/Reject/.test(o.paymentStatus)?\"out\":\"low\");$(\"lbRef\").textContent=\"Ref: \"+(o.paymentRef||\"Not provided\");$(\"lbPrev\").hidden=$(\"lbNext\").hidden=L.length<2;$(\"lbImg\").classList.remove(\"swap\");void $(\"lbImg\").offsetWidth;$(\"lbImg\").classList.add(\"swap\")}\n function close(){lb.classList.remove(\"open\");document.body.classList.remove(\"lb-open\")}\n function step(d){const L=list();if(L.length<2)return;at=(at+d+L.length)%L.length;paint()}\n function setPay(v,msg){const o=list()[at];if(!o)return;o.paymentStatus=v;if(/Verified/.test(v)&&/payment review/.test(o.status))o.status=\"Preparing\";save();renderAll(true);paint();toast(\"Order \"+o.id+\" \u00b7 \"+msg)}\n document.addEventListener(\"click\",e=>{const t=e.target.closest(\"[data-shot]\");if(t){show(t.dataset.shot)}});\n $(\"lbClose\").onclick=close;lb.addEventListener(\"click\",e=>{if(e.target===lb)close()});\n $(\"lbPrev\").onclick=e=>{e.stopPropagation();step(-1)};$(\"lbNext\").onclick=e=>{e.stopPropagation();step(1)};\n $(\"lbImg\").onclick=()=>{$(\"lbImg\").classList.toggle(\"zoom\");$(\"lbStage\").classList.toggle(\"zoomed\")};\n $(\"lbOk\").onclick=()=>setPay(\"Verified by owner\",\"payment verified\");$(\"lbReject\").onclick=()=>setPay(\"Rejected by owner\",\"payment rejected\");\n $(\"lbDl\").onclick=()=>{const o=list()[at];if(!o)return;const a=document.createElement(\"a\");a.href=o.screenshot;a.download=\"payment-\"+o.id+\".jpg\";document.body.appendChild(a);a.click();a.remove();toast(\"Downloaded payment-\"+o.id+\".jpg\")};\n addEventListener(\"keydown\",e=>{if(!lb.classList.contains(\"open\"))return;if(e.key===\"Escape\"){e.stopImmediatePropagation();close()}else if(e.key===\"ArrowLeft\")step(-1);else if(e.key===\"ArrowRight\")step(1)},true);\n // refresh hooks\n const _ra=_renderAll;_renderAll=function(k){_ra(k);usage();meta();idleUI();themeUI();if(lb.classList.contains(\"open\"))paint()};\n meta();idleUI();themeUI();\n})();\nLock.init(()=>_renderAll());\n\n\n<\/script>\n<script>document.addEventListener(\"click\",e=>{const g=e.target.closest(\"[data-go]\");if(!g)return;e.preventDefault();parent.CH.go(g.dataset.go)})<\/script>\n<\/body>\n<\/html>\n"</script>
+<script>
+window.CHSTORE=(()=>{try{CH_LS.setItem("__t","1");CH_LS.removeItem("__t");return CH_LS}catch(e){return{_d:{},getItem(k){return k in this._d?this._d[k]:null},setItem(k,v){this._d[k]=String(v)}}}})();
+(function(){
+ const pc=document.getElementById("pageCurtain"),view=document.getElementById("adminView");let frame=null,cur=location.hash==="#admin"?"admin":"store",busy=false;
+ const ADMIN=JSON.parse(document.getElementById("adminSrc").textContent);
+ function ensure(){if(frame)return Promise.resolve(frame);return new Promise(res=>{frame=document.createElement("iframe");frame.title="CampusHub Admin";frame.addEventListener("load",()=>res(frame),{once:true});frame.srcdoc=ADMIN;view.appendChild(frame)})}
+ function sync(w){try{const bw=CHSTORE.getItem("campusfind-theme")==="bw";w.document.body.classList.toggle("theme-bw",bw);w.dispatchEvent(new StorageEvent("storage",{key:"campusfind-preorder-items"}))}catch(e){}}
+ function hideWelcome(){const w=document.getElementById("welcomeScreen");if(w&&w.style.display!=="none"){w.style.display="none";document.body.classList.remove("intro","locked");document.body.classList.add("ready")}}
+ function apply(v){cur=v;const a=v==="admin";view.classList.toggle("on",a);document.documentElement.classList.toggle("in-admin",a);document.title=a?"CampusHub — Admin":"CampusHub — Store";if(a){sync(frame.contentWindow);setTimeout(()=>{try{frame.contentWindow.focus();const i=frame.contentDocument.getElementById("lpPw");if(i&&!frame.contentDocument.getElementById("lock").classList.contains("hidden"))i.focus()}catch(e){}},900)}else{hideWelcome();sync(window);scrollTo(0,0)}}
+ function reveal(){pc.className="page-curtain anim above";document.documentElement.classList.remove("arrive","arrive-admin")}
+ function go(v,push){if(v===cur||busy)return;busy=true;if(push!==false)history.pushState(null,"",v==="admin"?"#admin":"#store");
+  const wait=v==="admin"?ensure():Promise.resolve();
+  if(reduce){wait.then(()=>{apply(v);busy=false});return}
+  document.documentElement.classList.remove("arrive");pc.className="page-curtain";void pc.offsetWidth;pc.classList.add("anim","cover");
+  Promise.all([wait,new Promise(r=>setTimeout(r,850))]).then(()=>{apply(v);requestAnimationFrame(()=>requestAnimationFrame(()=>{reveal();busy=false}))})}
+ window.CH={go};
+ document.addEventListener("click",e=>{const a=e.target.closest("[data-go]");if(!a||e.metaKey||e.ctrlKey)return;e.preventDefault();go(a.dataset.go)});
+ addEventListener("popstate",()=>go(location.hash==="#admin"?"admin":"store",false));
+ if(cur==="admin")ensure().then(()=>{apply("admin");requestAnimationFrame(()=>requestAnimationFrame(reveal))});
+})();
+</script>
+<script>if("serviceWorker" in navigator&&window===window.top&&location.protocol==="https:"){addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}</script>
+<style>
+#chInstall{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translate(-50%,160%);z-index:2147483000;border:1px solid rgba(255,253,248,.18);display:flex;align-items:center;gap:12px;width:min(440px,calc(100vw - 24px));box-sizing:border-box;padding:10px 10px 10px 14px;border-radius:18px;background:#1c1a17;color:#fffdf8;box-shadow:0 14px 40px rgba(28,26,23,.28);font:500 14px/1.35 'Satoshi','Segoe UI',sans-serif;transition:transform .55s cubic-bezier(.22,1,.36,1)}
+#chInstall.show{transform:translate(-50%,0)}
+#chInstall img{width:36px;height:36px;border-radius:9px;flex:none}
+#chInstall .t{flex:1;min-width:0}#chInstall .t b{display:block;font-family:'Cabinet Grotesk','Segoe UI',sans-serif;font-size:15px}
+#chInstall .t span{opacity:.85}
+#chInstall button{border:0;border-radius:12px;padding:9px 14px;font:700 14px 'Satoshi','Segoe UI',sans-serif;cursor:pointer}
+#chInstallGo{background:#f2b632;color:#1c1a17}
+#chInstallX{background:transparent;color:#fffdf8;opacity:.8;padding:9px 8px!important}
+@media (prefers-reduced-motion:reduce){#chInstall{transition:none}}
+</style>
+<div id="chInstall" role="dialog" aria-live="polite" aria-label="Install CampusHub" hidden>
+<img src="icons/icon-192.png" alt="">
+<div class="t"><b>Install CampusHub</b><span id="chInstallMsg">Add it to your home screen like an app.</span></div>
+<button id="chInstallGo" type="button">Install</button>
+<button id="chInstallX" type="button" aria-label="Close">✕</button>
+</div>
+<script>
+(function(){
+  var box=document.getElementById('chInstall'),go=document.getElementById('chInstallGo'),x=document.getElementById('chInstallX'),msg=document.getElementById('chInstallMsg');
+  var standalone=window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+  if(standalone||window!==window.top)return;
+  var key='campushub-install-dismissed',dismissed=false;try{dismissed=window.CH_LS.getItem(key)==='1'}catch(e){}
+  if(dismissed)return;
+  function show(){box.hidden=false;requestAnimationFrame(function(){requestAnimationFrame(function(){box.classList.add('show')})})}
+  function hide(save){box.classList.remove('show');setTimeout(function(){box.hidden=true},550);if(save){try{window.CH_LS.setItem(key,'1')}catch(e){}}}
+  x.onclick=function(){hide(true)};
+  var deferred=null;
+  window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferred=e;go.hidden=false;setTimeout(show,2500)});
+  go.onclick=function(){if(!deferred)return;deferred.prompt();deferred.userChoice.finally(function(){deferred=null;hide(true)})};
+  window.addEventListener('appinstalled',function(){hide(true)});
+  var ua=navigator.userAgent,ios=/iphone|ipad|ipod/i.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  if(ios){go.hidden=true;msg.innerHTML='Tap <b style="display:inline;font:inherit;font-weight:700">Share</b> then <b style="display:inline;font:inherit;font-weight:700">Add to Home Screen</b>.';setTimeout(show,2500)}
+})();
+</script>
+<script data-pplx-inline-edit>
+(function () {
+  if (window === window.top) return;
+
+  const allowedParentOrigins = ["https://www.perplexity.ai","https://perplexity.ai","https://testing.perplexity.ai","https://staging.perplexity.ai","https://*.preview.i.perplexity.ai","http://perplexity.localhost","http://localhost:1420","http://127.0.0.1:1420","http://localhost:3000","http://127.0.0.1:3000","http://localhost:5173","http://127.0.0.1:5173"];
+  const MAX_FONT_BYTES = 500 * 1024;
+  const MAX_TOTAL_FONT_BYTES = 2 * 1024 * 1024;
+  const DEFAULT_LINE_HEIGHT = 16;
+  let scrollForwarding = false;
+  let scrollRaf = 0;
+  let trustedTopOrigin = null;
+
+  // Allow entries like "https://*.preview.i.perplexity.ai" — the wildcard
+  // matches a single DNS label (no dots), so "https://*.foo" cannot stretch
+  // across multiple labels.
+  function matchesAllowedOrigin(origin) {
+    if (!origin) return false;
+    for (const entry of allowedParentOrigins) {
+      if (!entry.includes("*")) {
+        if (entry === origin) return true;
+        continue;
+      }
+      const pattern = new RegExp(
+        "^" +
+          entry.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^.]+") +
+          "$",
+      );
+      if (pattern.test(origin)) return true;
+    }
+    return false;
+  }
+
+  // Trust decision: when the sender is same-origin-visible (event.origin is a
+  // real origin like https://www.perplexity.ai) we trust event.origin directly.
+  // When event.origin is "null" (opaque broker srcdoc), we fall back to the
+  // broker's stamped `parentOrigin` to identify the top window. The fallback
+  // is claim-only — we rely on the browser's native `targetOrigin` enforcement
+  // on the response path (see postToTrustedTop) to ensure replies can't be
+  // delivered to anyone but the actual top window of that claimed origin.
+  function getTrustedParentOrigin(event) {
+    const forwardedParentOrigin =
+      typeof event.data.parentOrigin === "string" ? event.data.parentOrigin : null;
+    const parentOrigin = event.origin === "null" ? forwardedParentOrigin : event.origin;
+    return matchesAllowedOrigin(parentOrigin) ? parentOrigin : null;
+  }
+
+  // All responses go to window.top with targetOrigin = the allowlisted origin.
+  // An attacker that iframes us inside their own null-origin broker can claim
+  // any parentOrigin they like, but the browser will drop the reply whenever
+  // the real top's origin doesn't match — so the screenshot never leaves.
+  function postToTrustedTop(message) {
+    if (!trustedTopOrigin) return;
+    try {
+      window.top.postMessage(message, trustedTopOrigin);
+    } catch (_error) {}
+  }
+
+  const PICK_CAPABILITIES = ["pick"];
+  const PICK_CHAIN_LENGTH = 4;
+  const PICK_MAX_TEXT_CHARS = 120;
+  const PICK_MAX_HTML_CHARS = 300;
+
+  function truncate(value, maxChars) {
+    return value.length > maxChars ? value.slice(0, maxChars - 1) + "…" : value;
+  }
+
+  function isPickableElement(element) {
+    return (
+      element instanceof Element &&
+      element !== document.documentElement &&
+      element !== document.body
+    );
+  }
+
+  function resolvePickTarget(x, y) {
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    const element = document.elementFromPoint(x, y);
+    return isPickableElement(element) ? element.closest("svg") || element : null;
+  }
+
+  function pickLabel(element) {
+    if (element.id) return element.localName + "#" + element.id;
+    return [element.localName].concat(Array.from(element.classList).slice(0, 2)).join(".");
+  }
+
+  // Only attributes that help find the element in source. data-* values and URL
+  // query strings or fragments can carry tokens.
+  const PICK_ATTRIBUTES = new Set([
+    "id",
+    "class",
+    "name",
+    "type",
+    "role",
+    "alt",
+    "aria-label",
+    "href",
+    "src",
+  ]);
+
+  function pickAttributeValue(attribute) {
+    return attribute.name === "href" || attribute.name === "src"
+      ? attribute.value.split(/[?#]/)[0]
+      : attribute.value;
+  }
+
+  function describePickElement(element) {
+    const chain = [];
+    for (
+      let current = element;
+      isPickableElement(current) && chain.length < PICK_CHAIN_LENGTH;
+      current = current.parentElement
+    ) {
+      chain.unshift(current);
+    }
+    const attributes = Array.from(element.attributes)
+      .filter((attribute) => PICK_ATTRIBUTES.has(attribute.name))
+      .map((attribute) => ` ${attribute.name}="${pickAttributeValue(attribute).replace(/"/g, "&quot;")}"`)
+      .join("");
+    const text = (element.innerText || element.textContent || "").replace(/\s+/g, " ").trim();
+    return {
+      chain: chain.map(pickLabel),
+      html: truncate(`<${element.localName}${attributes}>`, PICK_MAX_HTML_CHARS),
+      text: text ? truncate(text, PICK_MAX_TEXT_CHARS) : undefined,
+    };
+  }
+
+  // Hover asks once per frame, and innerText on a large section forces layout,
+  // so only the rect is re-read while the pointer stays on the same element.
+  // Clicks ask for fresh details since the page may have changed the element.
+  let lastPick = null;
+
+  function describePickTarget(element, fresh) {
+    if (fresh || lastPick?.element !== element) {
+      lastPick = { element, details: describePickElement(element) };
+    }
+    const rect = element.getBoundingClientRect();
+    return {
+      rect: { x: rect.left, y: rect.top, width: rect.width, height: rect.height },
+      ...lastPick.details,
+    };
+  }
+
+  function inlineAll(original, clone) {
+    if (original.nodeType !== 1 || clone.nodeType !== 1) return;
+
+    try {
+      const computedStyle = getComputedStyle(original);
+      // cssText on a computed style is the serialized declaration in modern
+      // Chromium/Safari — a single read beats enumerating ~400 longhand
+      // properties. Firefox returns "" here, so we fall back on empty.
+      const serialized = computedStyle.cssText;
+      if (serialized) {
+        clone.style.cssText = serialized;
+      } else {
+        const parts = new Array(computedStyle.length);
+        for (let index = 0; index < computedStyle.length; index += 1) {
+          const property = computedStyle[index];
+          parts[index] = `${property}:${computedStyle.getPropertyValue(property)};`;
+        }
+        clone.style.cssText = parts.join("");
+      }
+    } catch (_error) {}
+
+    const originalChildren = original.children;
+    const clonedChildren = clone.children;
+    for (
+      let index = 0;
+      index < originalChildren.length && index < clonedChildren.length;
+      index += 1
+    ) {
+      inlineAll(originalChildren[index], clonedChildren[index]);
+    }
+  }
+
+  function extractFontUrl(srcValue) {
+    const matches = [
+      ...srcValue.matchAll(
+        /url\(["']?([^"')]+)["']?\)(?:\s*format\(["']?([^"')]+)["']?\))?/gi,
+      ),
+    ];
+    if (matches.length === 0) return null;
+    const woff2 = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff2"));
+    if (woff2) return woff2[1];
+    const woff = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff"));
+    if (woff) return woff[1];
+    return matches[0][1];
+  }
+
+  // Cache resolved font URL -> data URI across captures. Fonts on a page
+  // essentially never change, and a batch run emits multiple captures back to
+  // back — without this we'd refetch + re-base64 every time.
+  const fontDataUriCache = new Map();
+  const SRC_DECLARATION_RE = /src\s*:\s*[^;}]+/i;
+
+  async function fetchAsDataUri(url) {
+    if (fontDataUriCache.has(url)) return fontDataUriCache.get(url);
+    let dataUri = null;
+    try {
+      const response = await fetch(url, { mode: "cors", credentials: "omit" });
+      if (response.ok) {
+        const blob = await response.blob();
+        if (blob.size <= MAX_FONT_BYTES) {
+          dataUri = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () =>
+              resolve(typeof reader.result === "string" ? reader.result : null);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+          });
+        }
+      }
+    } catch (_error) {
+      dataUri = null;
+    }
+    fontDataUriCache.set(url, dataUri);
+    return dataUri;
+  }
+
+  function collectFontFaceRuleTexts() {
+    const rules = [];
+    for (const sheet of document.styleSheets) {
+      let cssRules;
+      try {
+        cssRules = sheet.cssRules;
+      } catch (_error) {
+        continue;
+      }
+      if (!cssRules) continue;
+      for (const rule of cssRules) {
+        const cssText = rule.cssText || "";
+        if (cssText.startsWith("@font-face")) rules.push(cssText);
+      }
+    }
+    return rules;
+  }
+
+  async function buildInlinedFontCss() {
+    const ruleTexts = collectFontFaceRuleTexts();
+    if (ruleTexts.length === 0) return null;
+
+    const resolved = ruleTexts.map((cssText) => {
+      if (!SRC_DECLARATION_RE.test(cssText)) return null;
+      const srcMatch = cssText.match(/src\s*:\s*([^;}]+)[;}]/i);
+      if (!srcMatch) return null;
+      const url = extractFontUrl(srcMatch[1]);
+      if (!url) return null;
+      try {
+        return { cssText, url: new URL(url, document.baseURI).href };
+      } catch (_error) {
+        return null;
+      }
+    });
+
+    const dataUris = await Promise.all(
+      resolved.map((entry) => (entry ? fetchAsDataUri(entry.url) : Promise.resolve(null))),
+    );
+
+    const inlined = [];
+    let totalBytes = 0;
+    for (let index = 0; index < resolved.length; index += 1) {
+      const entry = resolved[index];
+      const dataUri = dataUris[index];
+      if (!entry || !dataUri) continue;
+      const approxBytes = dataUri.length * 0.75;
+      if (totalBytes + approxBytes > MAX_TOTAL_FONT_BYTES) break;
+      totalBytes += approxBytes;
+      inlined.push(entry.cssText.replace(SRC_DECLARATION_RE, `src: url("${dataUri}")`));
+    }
+    return inlined.length > 0 ? inlined.join("\n") : null;
+  }
+
+  function stripExternal(clone) {
+    const images = clone.querySelectorAll("img");
+    for (let index = 0; index < images.length; index += 1) {
+      const src = images[index].getAttribute("src");
+      if (src && !src.startsWith("data:")) images[index].removeAttribute("src");
+    }
+
+    const elements = clone.querySelectorAll("*");
+    for (let index = 0; index < elements.length; index += 1) {
+      const style = elements[index].style.cssText;
+      if (style && style.includes("url(")) {
+        elements[index].style.cssText = style.replace(
+          /url\(["']?(?!data:)[^)"']*["']?\)/gi,
+          "none",
+        );
+      }
+    }
+  }
+
+  function emitScroll() {
+    scrollRaf = 0;
+    if (!scrollForwarding) return;
+    postToTrustedTop({
+      type: "INLINE_EDIT_SCROLL",
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+      capabilities: PICK_CAPABILITIES,
+    });
+  }
+
+  window.addEventListener(
+    "scroll",
+    function () {
+      if (!scrollForwarding || scrollRaf) return;
+      scrollRaf = requestAnimationFrame(emitScroll);
+    },
+    { passive: true, capture: true },
+  );
+
+  async function handleCaptureRequest(event) {
+    const requestId = event.data.requestId;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    function postResult(dataUrl) {
+      postToTrustedTop({
+        type: "INLINE_EDIT_SCREENSHOT_RESULT",
+        requestId,
+        dataUrl,
+        scrollX,
+        scrollY,
+      });
+    }
+
+    try {
+      // Wait for any pending web fonts to resolve so both inline metrics and
+      // the @font-face inlining below see the same loaded faces.
+      if (document.fonts && document.fonts.ready) {
+        try {
+          await document.fonts.ready;
+        } catch (_error) {}
+      }
+
+      const clone = document.documentElement.cloneNode(true);
+      inlineAll(document.documentElement, clone);
+
+      const removedNodes = clone.querySelectorAll("script,link[rel=\"stylesheet\"],style");
+      for (let index = 0; index < removedNodes.length; index += 1) {
+        removedNodes[index].remove();
+      }
+
+      stripExternal(clone);
+
+      // Re-embed web fonts as data-URI @font-face rules so the SVG rasterizer
+      // can resolve them — external font URLs aren't fetched during
+      // foreignObject rendering, which would otherwise force a fallback face
+      // and change text metrics.
+      const inlinedFontCss = await buildInlinedFontCss();
+      if (inlinedFontCss) {
+        const styleEl = document.createElement("style");
+        styleEl.textContent = inlinedFontCss;
+        const head = clone.querySelector("head");
+        if (head) head.appendChild(styleEl);
+        else clone.insertBefore(styleEl, clone.firstChild);
+      }
+
+      const html = new XMLSerializer().serializeToString(clone);
+      const svg =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">` +
+        '<foreignObject width="100%" height="100%">' +
+        `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;height:${height}px;overflow:hidden">` +
+        `<div style="position:relative;left:-${scrollX}px;top:-${scrollY}px">` +
+        html +
+        "</div></div></foreignObject></svg>";
+      const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      const image = new Image();
+      image.onload = function () {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(image, 0, 0);
+        postResult(canvas.toDataURL("image/png"));
+      };
+      image.onerror = function () {
+        postResult(null);
+      };
+      image.src = svgUrl;
+    } catch (_error) {
+      postResult(null);
+    }
+  }
+
+  window.addEventListener("message", function (event) {
+    if (!event.data) return;
+    // Only accept messages from the direct parent frame. Blocks sibling /
+    // unrelated-window postMessage senders that could otherwise reach us.
+    if (event.source !== window.parent) return;
+
+    const trustedParentOrigin = getTrustedParentOrigin(event);
+    if (!trustedParentOrigin) return;
+    trustedTopOrigin = trustedParentOrigin;
+
+    if (event.data.type === "INLINE_EDIT_PICK") {
+      const element = resolvePickTarget(event.data.x, event.data.y);
+      postToTrustedTop({
+        type: "INLINE_EDIT_PICK_RESULT",
+        seq: event.data.seq,
+        target: element ? describePickTarget(element, event.data.fresh === true) : null,
+      });
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_START") {
+      scrollForwarding = true;
+      emitScroll();
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_STOP") {
+      scrollForwarding = false;
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      scrollRaf = 0;
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_BY") {
+      const { deltaX, deltaY, deltaMode } = event.data;
+      if (!scrollForwarding || !Number.isFinite(deltaX) || !Number.isFinite(deltaY)) return;
+      if (deltaMode !== 0 && deltaMode !== 1 && deltaMode !== 2) return;
+      const lineHeight =
+        parseFloat(getComputedStyle(document.documentElement).lineHeight) || DEFAULT_LINE_HEIGHT;
+      const scaleX = deltaMode === 1 ? lineHeight : deltaMode === 2 ? window.innerWidth : 1;
+      const scaleY = deltaMode === 1 ? lineHeight : deltaMode === 2 ? window.innerHeight : 1;
+      // The selection overlay receives the wheel event instead of this iframe.
+      // Instant scrolling preserves trackpad deltas even on smooth-scroll sites.
+      window.scrollBy({ left: deltaX * scaleX, top: deltaY * scaleY, behavior: "instant" });
+      emitScroll();
+      return;
+    }
+
+    if (event.data.type !== "INLINE_EDIT_CAPTURE_REQUEST") return;
+
+    handleCaptureRequest(event);
+  });
+})();
+
+
+</script></body>
+</html>
